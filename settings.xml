@@ -1,0 +1,12 @@
+<settings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="settings.xsd">
+	<pattern>
+		<p name="STF">^&lt;(.+)&gt;(.+?):.*\[(.+?):(.+? )(.*)\]:(.+)$</p>
+		<p name="Test">^(.*)$</p>
+	</pattern>
+	<filter>
+		<f name="Empty"></f>
+		<f name="Error">2:Error</f>
+		<f name="SDManager">3:CSDManager</f>
+	</filter>
+</settings>
