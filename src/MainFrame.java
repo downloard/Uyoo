@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -46,6 +47,12 @@ public class MainFrame extends JFrame implements ActionListener {
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
+		//read last opened file
+		List<Settings.Files.F> setupFiles = UyooSettings.getInstance().getSettings().getFiles().getF();
+		if (setupFiles.size() > 0) {
+			m_selectedFile = new File(setupFiles.get(0).getValue());
+		}
+		
 		initComponents();
 	}
 
@@ -61,6 +68,9 @@ public class MainFrame extends JFrame implements ActionListener {
 			
 			//File
 			m_tfFile = new JTextField(50);
+			if (m_selectedFile != null) {
+				m_tfFile.setText(m_selectedFile.getAbsolutePath());
+			}
 			m_tfFile.setEditable(false);
 			m_btnOpen = new JButton("Open");
 			m_btnOpen.addActionListener(this);
@@ -111,20 +121,27 @@ public class MainFrame extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == m_btnOpen) {
-			selectFile();
-			openFile();
+			if (selectFile() == true) {
+				openFile();
+			}
 		} else if (e.getSource() == m_btnReload) {
 			openFile();
 		}
 	}
 	
-	private void selectFile() {
-		JFileChooser fc = new JFileChooser("c:\\Projects\\3\\Boards\\_workspaces_speech\\_Win32_OGLES2_Debug\\output\\");
+	private boolean selectFile() {		
+		JFileChooser fc = new JFileChooser();
+		if (m_selectedFile != null) {
+			fc.setSelectedFile(new File(m_selectedFile.getAbsolutePath()));
+		}
 		int state = fc.showOpenDialog(this);
 		if ( state == JFileChooser.APPROVE_OPTION )
 	    {
 			m_selectedFile = fc.getSelectedFile();
 			m_tfFile.setText( m_selectedFile.getAbsolutePath() );
+			return true;
+	    } else {
+	    	return false;
 	    }
 	}
 	

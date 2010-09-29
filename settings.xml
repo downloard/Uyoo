@@ -1,12 +1,15 @@
 <settings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:noNamespaceSchemaLocation="settings.xsd">
+    <files>
+    	<f>resources/test.out</f>
+    </files>
 	<pattern>
+		<p name="Test">^(.*?)-(.*?)-(.*?)-(.*?)$</p>
 		<p name="STF">^&lt;(.+)&gt;(.+?):.*\[(.+?):(.+? )(.*)\]:(.+)$</p>
 		<p name="Test">^(.*)$</p>
 	</pattern>
 	<filter>
 		<f name="Empty"></f>
-		<f name="Error">2:Error</f>
-		<f name="SDManager">3:CSDManager</f>
+		<f name="Error">2:ERROR</f>
 	</filter>
 </settings>
