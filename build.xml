@@ -1,0 +1,25 @@
+<project default="deploy">
+	
+	<property name="dirBin" value="./antbuild" />
+	<property name="dirDeploy" value="./deploy" />
+	<property name="dirResources" value="resources" />
+	
+	<target name="compile">
+		<mkdir dir="${dirBin}" />
+		<javac srcdir="./src" destdir="${dirBin}" />
+	</target>
+	
+	<target name="deploy" depends="compile">
+		<jar destfile="${dirDeploy}/uyoo.jar">
+			<fileset dir="${dirBin}" />
+			<manifest>
+                <attribute name="Main-Class" value="Uyoo"/>
+            </manifest>
+		</jar>
+		
+		<mkdir dir="${dirDeploy}/${dirResources}" />
+		<copy tofile="${dirDeploy}/${dirResources}/settings.xml">        
+            <file file="${dirResources}/settings.xml" />
+        </copy >
+	</target>
+</project>
