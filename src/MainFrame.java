@@ -10,6 +10,7 @@ import java.io.File;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -21,6 +22,7 @@ import javax.swing.JTextField;
 
 import table.LogTable;
 import table.LogTableFilter;
+import table.LogTableModel;
 
 
 @SuppressWarnings("serial")
@@ -36,6 +38,9 @@ public class MainFrame extends JFrame implements ActionListener {
 	private JComboBox  m_cbFilter;
 	
 	private LogTable   m_tblLogs;
+	private LogTableModel m_logTableModel;
+	
+	private JCheckBox  m_cbAutoReload;
 	
 	
 	public MainFrame() {
@@ -76,11 +81,15 @@ public class MainFrame extends JFrame implements ActionListener {
 			m_btnOpen.addActionListener(this);
 			m_btnReload = new JButton("Reload");
 			m_btnReload.addActionListener(this);
+			m_cbAutoReload = new JCheckBox("Autoreload");
+			m_cbAutoReload.setSelected(false);
+			m_cbAutoReload.addActionListener(this);
 			JPanel pnlFile = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			pnlFile.add(new JLabel("File:"));
 			pnlFile.add(m_tfFile);
 			pnlFile.add(m_btnOpen);
 			pnlFile.add(m_btnReload);
+			pnlFile.add(m_cbAutoReload);
 			
 			//Pattern
 			JPanel pnlPattern = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -111,7 +120,8 @@ public class MainFrame extends JFrame implements ActionListener {
 			mainPanel.add(pnlNorth, BorderLayout.NORTH);
 		}
 
-		m_tblLogs = new LogTable();
+	    m_logTableModel = new LogTableModel(); 
+		m_tblLogs = new LogTable(m_logTableModel);
 		JScrollPane sp = new JScrollPane(m_tblLogs, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		mainPanel.add(sp, BorderLayout.CENTER);
 		
@@ -126,6 +136,12 @@ public class MainFrame extends JFrame implements ActionListener {
 			}
 		} else if (e.getSource() == m_btnReload) {
 			openFile();
+		} else if (e.getSource() == m_cbAutoReload) {
+			if (m_cbAutoReload.isSelected()) {
+				m_logTableModel.startAutoreload();
+			} else {
+				m_logTableModel.stopAutoReload();
+			}
 		}
 	}
 	
@@ -156,6 +172,9 @@ public class MainFrame extends JFrame implements ActionListener {
 		if (filter.equals("") == false) {
 			tf = new LogTableFilter(filter);
 		}
-		m_tblLogs.setFile(m_selectedFile, m_cbPattern.getSelectedItem().toString(), tf);
+		
+		boolean autoReload = m_cbAutoReload.isSelected();
+		
+		m_tblLogs.setFile(m_selectedFile, m_cbPattern.getSelectedItem().toString(), tf, autoReload);
 	}
 }

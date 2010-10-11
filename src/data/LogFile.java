@@ -20,19 +20,19 @@ public class LogFile {
 
 	private int m_groupCount;
 	
-	public LogFile(File file) {
-		m_file = file;
-		
+	public LogFile() {	
 		m_groupCount = 0;
 		m_lines = new Vector<LogLine>();
-		
-		readFile();
-	}
-	
-	public LogFile() {
 	}
 
-	private void readFile() {
+	public void readFile(File file) {
+		m_file = file;
+		reloadFile();
+	}
+	
+	public void reloadFile() {
+		m_lines.clear();
+		
 		try {			
 			BufferedReader br = new BufferedReader(new FileReader(m_file));
 			
@@ -132,5 +132,9 @@ public class LogFile {
 		{
 			return m_viewport.get(line).getGroupText(group);
 		}
+	}
+
+	public File getFile() {
+		return m_file;
 	}
 }

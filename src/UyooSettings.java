@@ -10,7 +10,7 @@ import generated.Settings;
 
 public class UyooSettings {
 	
-	private static String          SETTINGS_FILE = "resources/settings.xml";
+	private static String       SETTINGS_FILE = "resources/settings.xml";
 	private static UyooSettings m_instance;
 	
 	private Settings m_config;

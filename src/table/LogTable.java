@@ -8,19 +8,19 @@ import javax.swing.JTable;
 @SuppressWarnings("serial")
 public class LogTable extends JTable {
 	
-	LogTableModel m_logTableModel;
+	private LogTableModel m_logTableModel;
 	
-	public LogTable() {
+	public LogTable(LogTableModel model) {
 		//init table model
-		m_logTableModel = new LogTableModel();
+		m_logTableModel = model;
 		setModel(m_logTableModel);
 		
 		
 		setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 	}
 
-	public void setFile(File file, String pattern, LogTableFilter tf)
+	public void setFile(File file, String pattern, LogTableFilter tf, boolean autoReload)
 	{
-		m_logTableModel.setFile(file, pattern, tf);
+		m_logTableModel.setFile(file, pattern, tf, autoReload);
 	}
 }
