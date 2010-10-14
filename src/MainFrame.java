@@ -43,8 +43,8 @@ public class MainFrame extends JFrame implements ActionListener {
 	private JCheckBox  m_cbAutoReload;
 	
 	
-	public MainFrame() {
-		super("Uyoo");
+	public MainFrame(String title) {
+		super(title);
 		
 		m_selectedFile = null;
 		
@@ -60,7 +60,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		
 		initComponents();
 	}
-
+	
 	private void initComponents() {
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BorderLayout());

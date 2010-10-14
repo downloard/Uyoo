@@ -4,16 +4,29 @@
 	<property name="dirDeploy" value="./deploy" />
 	<property name="dirResources" value="resources" />
 	
-	<target name="compile">
+	<target name="clean">
+		<delete>
+			<fileset dir="${dirBin}" />
+			<fileset dir="${dirDeploy}" />
+		</delete>
+	</target>
+	
+	<target name="compile" depends="clean">
 		<mkdir dir="${dirBin}" />
 		<javac srcdir="./src" destdir="${dirBin}" />
 	</target>
 	
 	<target name="deploy" depends="compile">
+		
+		<property name="version.num" value="0.01" />
+		<buildnumber file="build.num" />
+				
 		<jar destfile="${dirDeploy}/uyoo.jar">
 			<fileset dir="${dirBin}" />
 			<manifest>
-                <attribute name="Main-Class" value="Uyoo"/>
+                <attribute name="Main-Class" value="uyoo.Uyoo"/>
+				<attribute name="Implementation-Version" 
+				           value="${version.num} (Build ${build.number})"/> 
             </manifest>
 		</jar>
 		
