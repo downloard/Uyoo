@@ -1,3 +1,5 @@
+package setup;
+
 import java.io.File;
 
 import javax.xml.bind.JAXBContext;
@@ -30,7 +32,20 @@ public class UyooSettings {
 		loadConfigFile();
 	}
 	
-	public Settings getSettings() {
+	public String getApplicationName() {
+		return "Uyoo";
+	}
+	
+	public String getVersionNumber() {
+		Package p = getClass().getPackage();
+		if (p != null) {
+			return p.getImplementationVersion();
+		} else {
+			return "<Version>";
+		}
+	}
+	
+	public Settings getPersistentSettings() {
 		return m_config;
 	}
 	

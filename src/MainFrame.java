@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
+import setup.UyooSettings;
 import table.LogTable;
 import table.LogTableFilter;
 import table.LogTableModel;
@@ -43,8 +44,10 @@ public class MainFrame extends JFrame implements ActionListener {
 	private JCheckBox  m_cbAutoReload;
 	
 	
-	public MainFrame(String title) {
-		super(title);
+	public MainFrame() {
+		super(UyooSettings.getInstance().getApplicationName() 
+		      + " - "
+		      + UyooSettings.getInstance().getVersionNumber());
 		
 		m_selectedFile = null;
 		
@@ -53,7 +56,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		//read last opened file
-		List<Settings.Files.F> setupFiles = UyooSettings.getInstance().getSettings().getFiles().getF();
+		List<Settings.Files.F> setupFiles = UyooSettings.getInstance().getPersistentSettings().getFiles().getF();
 		if (setupFiles.size() > 0) {
 			m_selectedFile = new File(setupFiles.get(0).getValue());
 		}
@@ -65,7 +68,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BorderLayout());
 		
-		Settings settings = UyooSettings.getInstance().getSettings();
+		Settings settings = UyooSettings.getInstance().getPersistentSettings();
 		
 		{
 			JPanel pnlNorth = new JPanel();
