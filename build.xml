@@ -17,7 +17,7 @@
 	<target name="deploy" depends="compile">
 		<mkdir dir="${dirDeploy}" />
 		
-		<property name="version.num" value="0.01" />
+		<property name="version.num" value="0" />
 		<buildnumber file="build.num" />
 				
 		<jar destfile="${dirDeploy}/uyoo.jar">
@@ -25,7 +25,7 @@
 			<manifest>
                 <attribute name="Main-Class" value="Uyoo"/>
 				<attribute name="Implementation-Version" 
-				           value="${version.num} (Build ${build.number})"/> 
+				           value="${version.num}.${build.number}"/> 
             </manifest>
 		</jar>
 		
