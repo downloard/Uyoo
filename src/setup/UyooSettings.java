@@ -53,6 +53,7 @@ public class UyooSettings {
 		try {
 			JAXBContext ctx = JAXBContext.newInstance(Settings.class);
 			javax.xml.bind.Marshaller m = ctx.createMarshaller();
+			m.setProperty(javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			m.marshal(m_settings, new File(SETTINGS_FILE));
 		} catch (Exception ex) {
 			ex.printStackTrace();
