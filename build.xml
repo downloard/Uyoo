@@ -17,15 +17,16 @@
 	<target name="deploy" depends="compile">
 		<mkdir dir="${dirDeploy}" />
 		
-		<property name="version.num" value="0" />
+		<property name="version.major" value="0" />
 		<buildnumber file="build.num" />
+		<property name="fullVersion" value="${version.major}.${build.number}" />
 				
 		<jar destfile="${dirDeploy}/uyoo.jar">
 			<fileset dir="${dirBin}" />
 			<manifest>
                 <attribute name="Main-Class" value="Uyoo"/>
 				<attribute name="Implementation-Version" 
-				           value="${version.num}.${build.number}"/> 
+				           value="${fullVersion}"/> 
             </manifest>
 		</jar>
 		
@@ -34,7 +35,7 @@
             <file file="${dirResources}/settings.xml" />
         </copy >
 		
-		<zip destfile="${dirDeploy}/uyooo.zip"
+		<zip destfile="${dirDeploy}/uyoo_v${fullVersion}.zip"
 		       basedir="${dirDeploy}" />
 	</target>
 </project>
