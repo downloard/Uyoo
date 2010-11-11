@@ -1,4 +1,5 @@
 import generated.Settings;
+import generated.Settings.Files.F;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -18,7 +19,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 
 import setup.UyooSettings;
 import table.LogTable;
@@ -31,7 +31,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	
 	private File 	   m_selectedFile;
 	
-	private JTextField m_tfFile;
+	private JComboBox  m_cbFile;
 	private JButton    m_btnOpen; 
 	private JButton    m_btnReload;
 	
@@ -55,12 +55,6 @@ public class MainFrame extends JFrame implements ActionListener {
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		//read last opened file
-		List<Settings.Files.F> setupFiles = UyooSettings.getInstance().getPersistentSettings().getFiles().getF();
-		if (setupFiles.size() > 0) {
-			m_selectedFile = new File(setupFiles.get(0).getValue());
-		}
-		
 		initComponents();
 	}
 	
@@ -75,11 +69,16 @@ public class MainFrame extends JFrame implements ActionListener {
 			pnlNorth.setLayout(new GridLayout(3, 1));
 			
 			//File
-			m_tfFile = new JTextField(50);
-			if (m_selectedFile != null) {
-				m_tfFile.setText(m_selectedFile.getAbsolutePath());
+			m_cbFile = new JComboBox();
+			for (Settings.Files.F f : settings.getFiles().getF()) {
+				m_cbFile.addItem(f.getValue());
 			}
-			m_tfFile.setEditable(false);
+			m_cbFile.setEditable(false);
+			m_cbFile.addActionListener(this);
+			if (m_cbFile.getItemCount() > 0) {
+				m_cbFile.setSelectedIndex(0);
+				setSelectedFile();
+			}
 			m_btnOpen = new JButton("Open");
 			m_btnOpen.addActionListener(this);
 			m_btnReload = new JButton("Reload");
@@ -89,7 +88,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			m_cbAutoReload.addActionListener(this);
 			JPanel pnlFile = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			pnlFile.add(new JLabel("File:"));
-			pnlFile.add(m_tfFile);
+			pnlFile.add(m_cbFile);
 			pnlFile.add(m_btnOpen);
 			pnlFile.add(m_btnReload);
 			pnlFile.add(m_cbAutoReload);
@@ -131,6 +130,11 @@ public class MainFrame extends JFrame implements ActionListener {
 		getContentPane().add(mainPanel);
 	}
 	
+	private void setSelectedFile() {
+		assert(m_cbFile.getItemCount() > 0);
+		m_selectedFile = new File(m_cbFile.getSelectedItem().toString());
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == m_btnOpen) {
@@ -145,6 +149,8 @@ public class MainFrame extends JFrame implements ActionListener {
 			} else {
 				m_logTableModel.stopAutoReload();
 			}
+		} else if (e.getSource() == m_cbFile) {
+			setSelectedFile();
 		}
 	}
 	
@@ -157,7 +163,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		if ( state == JFileChooser.APPROVE_OPTION )
 	    {
 			m_selectedFile = fc.getSelectedFile();
-			m_tfFile.setText( m_selectedFile.getAbsolutePath() );
+			addNewFile();
 			return true;
 	    } else {
 	    	return false;
@@ -178,6 +184,35 @@ public class MainFrame extends JFrame implements ActionListener {
 		
 		boolean autoReload = m_cbAutoReload.isSelected();
 		
-		m_tblLogs.setFile(m_selectedFile, m_cbPattern.getSelectedItem().toString(), tf, autoReload);
+		m_tblLogs.setFile(m_selectedFile, m_cbPattern.getSelectedItem().toString(), tf, autoReload);		
+	}
+
+	/**
+	 * Adds new file to persistent settings and GUI drop down
+	 */
+	private void addNewFile() {
+		//add file to settings
+		List<F> files = UyooSettings.getInstance().getPersistentSettings().getFiles().getF();
+		//check if alread in persistent data
+		boolean needToAdd = true;
+		for(F next : files) {
+			File nextFile = new File(next.getValue());
+			if (nextFile.equals(m_selectedFile)) {
+				needToAdd = false;
+				break;
+			}
+		}
+		if (needToAdd == true) {
+			//add to GUI
+			m_cbFile.addItem( m_selectedFile.getAbsolutePath() );
+			
+			//add to settings
+			F f = new F();
+			f.setValue(m_selectedFile.getAbsolutePath());
+			files.add(f);
+			
+			//save persistent
+			UyooSettings.getInstance().saveConfigFile();
+		}
 	}
 }

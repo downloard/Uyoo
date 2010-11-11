@@ -15,7 +15,7 @@ public class UyooSettings {
 	private static String       SETTINGS_FILE = "resources/settings.xml";
 	private static UyooSettings m_instance;
 	
-	private Settings m_config;
+	private Settings m_settings;
 	
 	public static UyooSettings getInstance() {
 		if (m_instance == null) {
@@ -46,7 +46,17 @@ public class UyooSettings {
 	}
 	
 	public Settings getPersistentSettings() {
-		return m_config;
+		return m_settings;
+	}
+	
+	public void saveConfigFile() {
+		try {
+			JAXBContext ctx = JAXBContext.newInstance(Settings.class);
+			javax.xml.bind.Marshaller m = ctx.createMarshaller();
+			m.marshal(m_settings, new File(SETTINGS_FILE));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 	
 	private void loadConfigFile() {
@@ -62,7 +72,7 @@ public class UyooSettings {
 			javax.xml.bind.Unmarshaller um = context.createUnmarshaller();
 			
 			JAXBElement<Settings> configElement = um.unmarshal(new StreamSource(file), Settings.class);
-			m_config = configElement.getValue();
+			m_settings = configElement.getValue();
 		}
 		catch(JAXBException ex)
 		{
