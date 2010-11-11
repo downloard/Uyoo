@@ -1,5 +1,4 @@
 import generated.Settings;
-import generated.Settings.Files.F;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -8,7 +7,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -16,11 +14,11 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import setup.UyooSettings;
+import swing.SetupComboBoxModel;
 import table.LogTable;
 import table.LogTableFilter;
 import table.LogTableModel;
@@ -29,7 +27,7 @@ import table.LogTableModel;
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame implements ActionListener {
 	
-	private File 	   m_selectedFile;
+	private MainController m_controller;
 	
 	private JComboBox  m_cbFile;
 	private JButton    m_btnOpen; 
@@ -49,11 +47,11 @@ public class MainFrame extends JFrame implements ActionListener {
 		      + " - "
 		      + UyooSettings.getInstance().getVersionNumber());
 		
-		m_selectedFile = null;
-		
 		setSize(800, 600);
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		m_controller = new MainController(this);
 		
 		initComponents();
 	}
@@ -63,25 +61,19 @@ public class MainFrame extends JFrame implements ActionListener {
 		mainPanel.setLayout(new BorderLayout());
 		
 		Settings settings = UyooSettings.getInstance().getPersistentSettings();
-		
+
 		{
 			JPanel pnlNorth = new JPanel();
 			pnlNorth.setLayout(new GridLayout(3, 1));
 			
 			//File
-			m_cbFile = new JComboBox();
-			for (Settings.Files.F f : settings.getFiles().getF()) {
-				m_cbFile.addItem(f.getValue());
-			}
+			m_cbFile = new JComboBox(new SetupComboBoxModel(settings.getFiles().getF()));
+			m_cbFile.setPreferredSize(new Dimension(600, m_cbFile.getPreferredSize().height));
 			m_cbFile.setEditable(false);
 			m_cbFile.addActionListener(this);
-			if (m_cbFile.getItemCount() > 0) {
-				m_cbFile.setSelectedIndex(0);
-				setSelectedFile();
-			}
-			m_btnOpen = new JButton("Open");
+			m_btnOpen = new JButton("Select");
 			m_btnOpen.addActionListener(this);
-			m_btnReload = new JButton("Reload");
+			m_btnReload = new JButton("(Re)Load");
 			m_btnReload.addActionListener(this);
 			m_cbAutoReload = new JCheckBox("Autoreload");
 			m_cbAutoReload.setSelected(false);
@@ -95,23 +87,17 @@ public class MainFrame extends JFrame implements ActionListener {
 			
 			//Pattern
 			JPanel pnlPattern = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			m_cbPattern = new JComboBox();
+			m_cbPattern = new JComboBox(new SetupComboBoxModel(settings.getPattern().getP()));
 			m_cbPattern.setEditable(true);
 			m_cbPattern.setPreferredSize(new Dimension(400, m_cbPattern.getPreferredSize().height));
-			for (Settings.Pattern.P pattern : settings.getPattern().getP()) {
-				m_cbPattern.addItem(pattern.getValue());
-			}
 			pnlPattern.add(new JLabel("Pattern:"));
 			pnlPattern.add(m_cbPattern);
 			
 			//Filter
 			JPanel pnlFilter = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			m_cbFilter = new JComboBox();
+			m_cbFilter = new JComboBox(new SetupComboBoxModel(settings.getFilter().getF()));
 			m_cbFilter.setPreferredSize(new Dimension(400, m_cbFilter.getPreferredSize().height));
 			m_cbFilter.setEditable(true);
-			for (Settings.Filter.F filter : settings.getFilter().getF()) {
-				m_cbFilter.addItem(filter.getValue());
-			}
 			pnlFilter.add(new JLabel("Filter:"));
 			pnlFilter.add(m_cbFilter);
 			
@@ -120,6 +106,18 @@ public class MainFrame extends JFrame implements ActionListener {
 			pnlNorth.add(pnlFilter);
 			
 			mainPanel.add(pnlNorth, BorderLayout.NORTH);
+			
+			if (m_cbFile.getItemCount() > 0) {
+				m_cbFile.setSelectedIndex(0);
+				setSelectedFile();
+			}
+			if (m_cbPattern.getItemCount() > 0) {
+				m_cbPattern.setSelectedIndex(0);
+			}
+			if (m_cbFilter.getItemCount() > 0) {
+				m_cbFilter.setSelectedIndex(0);
+			}
+			updateSettings(null);
 		}
 
 	    m_logTableModel = new LogTableModel(); 
@@ -130,20 +128,30 @@ public class MainFrame extends JFrame implements ActionListener {
 		getContentPane().add(mainPanel);
 	}
 	
+	public void updateSettings(String file) {
+		if (file != null) {
+			//set selected item of combo box
+			m_cbFile.setSelectedItem(file);
+		}
+		
+		((SetupComboBoxModel) (m_cbFile.getModel())).dataChanged();
+		((SetupComboBoxModel) (m_cbFilter.getModel())).dataChanged();
+		((SetupComboBoxModel) (m_cbPattern.getModel())).dataChanged();
+	}
+	
 	private void setSelectedFile() {
 		assert(m_cbFile.getItemCount() > 0);
-		m_selectedFile = new File(m_cbFile.getSelectedItem().toString());
+		m_controller.setSelectedFile(m_cbFile.getSelectedItem().toString());
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == m_btnOpen) {
-			if (selectFile() == true) {
-				openFile();
-			}
+			m_controller.selectFile();
 		} else if (e.getSource() == m_btnReload) {
-			openFile();
+			m_controller.loadFile();
 		} else if (e.getSource() == m_cbAutoReload) {
+			//TODO: move to controller
 			if (m_cbAutoReload.isSelected()) {
 				m_logTableModel.startAutoreload();
 			} else {
@@ -154,28 +162,21 @@ public class MainFrame extends JFrame implements ActionListener {
 		}
 	}
 	
-	private boolean selectFile() {		
+	public File selectFile() {	
 		JFileChooser fc = new JFileChooser();
-		if (m_selectedFile != null) {
-			fc.setSelectedFile(new File(m_selectedFile.getAbsolutePath()));
+		if (m_controller.getSelectedFile() != null) {
+			fc.setSelectedFile(m_controller.getSelectedFile());
 		}
 		int state = fc.showOpenDialog(this);
-		if ( state == JFileChooser.APPROVE_OPTION )
-	    {
-			m_selectedFile = fc.getSelectedFile();
-			addNewFile();
-			return true;
+		if ( state == JFileChooser.APPROVE_OPTION ) {
+			return fc.getSelectedFile();
 	    } else {
-	    	return false;
+	    	return null;
 	    }
 	}
 	
-	private void openFile() {
-		if (m_selectedFile == null) {
-			JOptionPane.showMessageDialog(this, "No file selected");
-			return;
-		}
-		
+	public void loadFile(File file) {		
+		//TODO: move to controller:
 		LogTableFilter tf = null;
 		String filter = m_cbFilter.getSelectedItem().toString();
 		if (filter.equals("") == false) {
@@ -184,35 +185,8 @@ public class MainFrame extends JFrame implements ActionListener {
 		
 		boolean autoReload = m_cbAutoReload.isSelected();
 		
-		m_tblLogs.setFile(m_selectedFile, m_cbPattern.getSelectedItem().toString(), tf, autoReload);		
+		m_tblLogs.setFile(file, m_cbPattern.getSelectedItem().toString(), tf, autoReload);		
 	}
 
-	/**
-	 * Adds new file to persistent settings and GUI drop down
-	 */
-	private void addNewFile() {
-		//add file to settings
-		List<F> files = UyooSettings.getInstance().getPersistentSettings().getFiles().getF();
-		//check if alread in persistent data
-		boolean needToAdd = true;
-		for(F next : files) {
-			File nextFile = new File(next.getValue());
-			if (nextFile.equals(m_selectedFile)) {
-				needToAdd = false;
-				break;
-			}
-		}
-		if (needToAdd == true) {
-			//add to GUI
-			m_cbFile.addItem( m_selectedFile.getAbsolutePath() );
-			
-			//add to settings
-			F f = new F();
-			f.setValue(m_selectedFile.getAbsolutePath());
-			files.add(f);
-			
-			//save persistent
-			UyooSettings.getInstance().saveConfigFile();
-		}
-	}
+	
 }

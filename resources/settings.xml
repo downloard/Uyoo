@@ -1,15 +1,20 @@
-<settings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:noNamespaceSchemaLocation="settings.xsd">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings>
     <files>
-    	<f>resources/test.out</f>
+        <f>resources/test.out</f>
+        <f>C:\projects\PASA-GM\Trunk_GTF\Boards\_workspaces_speech\_Win32_OGLES2_Debug_Delivery\output\ssp.log.log</f>
+        <f>C:\Documents and Settings\hemo8078\My Documents\Visual Studio 2008\Projects\VSMacros80\Samples\Samples.vsmacros</f>
+        <f>C:\Temp\setup.ext.rss.txt</f>
+        <f>C:\Temp\ssp.log.log</f>
+        <f>C:\Temp\sdm.patch</f>
     </files>
-	<pattern>
-		<p name="Test">^(.*?)-(.*?)-(.*?)-(.*?)$</p>
-		<p name="STF">^&lt;(.+)&gt;(.+?):.*\[(.+?):(.+? )(.*)\]:(.+)$</p>
-		<p name="Test">^(.*)$</p>
-	</pattern>
-	<filter>
-		<f name="Empty"></f>
-		<f name="Error">2:ERROR</f>
-	</filter>
+    <pattern>
+        <p name="Test">^(.*?)-(.*?)-(.*?)-(.*?)$</p>
+        <p name="STF">^&lt;(.+)&gt;(.+?):.*\[(.+?):(.+? )(.*)\]:(.+)$</p>
+        <p name="Test">^(.*)$</p>
+    </pattern>
+    <filter>
+        <f name="Empty"></f>
+        <f name="Error">2:ERROR</f>
+    </filter>
 </settings>
