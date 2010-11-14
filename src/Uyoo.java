@@ -1,5 +1,7 @@
 import javax.swing.UIManager;
 
+import swing.MainFrame;
+
 public class Uyoo {
 	/**
 	 * @param args
