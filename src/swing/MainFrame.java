@@ -1,3 +1,5 @@
+package swing;
+
 import generated.Settings;
 
 import java.awt.BorderLayout;
@@ -17,8 +19,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import controller.MainController;
+
 import setup.UyooSettings;
-import swing.SetupComboBoxModel;
+import swing.SetupComboBox.SetupComboBoxEditor;
+import swing.SetupComboBox.SetupComboBoxModel;
+import swing.SetupComboBox.SetupComboBoxModelFile;
+import swing.SetupComboBox.SetupComboBoxModelFilter;
+import swing.SetupComboBox.SetupComboBoxModelPattern;
 import table.LogTable;
 import table.LogTableFilter;
 import table.LogTableModel;
@@ -67,7 +75,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			pnlNorth.setLayout(new GridLayout(3, 1));
 			
 			//File
-			m_cbFile = new JComboBox(new SetupComboBoxModel(settings.getFiles().getF()));
+			m_cbFile = new JComboBox(new SetupComboBoxModelFile(settings.getFiles().getF()));
 			m_cbFile.setPreferredSize(new Dimension(600, m_cbFile.getPreferredSize().height));
 			m_cbFile.setEditable(false);
 			m_cbFile.addActionListener(this);
@@ -87,7 +95,8 @@ public class MainFrame extends JFrame implements ActionListener {
 			
 			//Pattern
 			JPanel pnlPattern = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			m_cbPattern = new JComboBox(new SetupComboBoxModel(settings.getPattern().getP()));
+			m_cbPattern = new JComboBox(new SetupComboBoxModelPattern(settings.getPattern().getP()));
+			m_cbPattern.setEditor(new SetupComboBoxEditor());
 			m_cbPattern.setEditable(true);
 			m_cbPattern.setPreferredSize(new Dimension(400, m_cbPattern.getPreferredSize().height));
 			pnlPattern.add(new JLabel("Pattern:"));
@@ -95,9 +104,11 @@ public class MainFrame extends JFrame implements ActionListener {
 			
 			//Filter
 			JPanel pnlFilter = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			m_cbFilter = new JComboBox(new SetupComboBoxModel(settings.getFilter().getF()));
+			m_cbFilter = new JComboBox(new SetupComboBoxModelFilter(settings.getFilter().getF()));
 			m_cbFilter.setPreferredSize(new Dimension(400, m_cbFilter.getPreferredSize().height));
+			m_cbFilter.setEditor(new SetupComboBoxEditor());
 			m_cbFilter.setEditable(true);
+			m_cbFilter.addActionListener(this);
 			pnlFilter.add(new JLabel("Filter:"));
 			pnlFilter.add(m_cbFilter);
 			
@@ -107,16 +118,12 @@ public class MainFrame extends JFrame implements ActionListener {
 			
 			mainPanel.add(pnlNorth, BorderLayout.NORTH);
 			
-			if (m_cbFile.getItemCount() > 0) {
-				m_cbFile.setSelectedIndex(0);
-				setSelectedFile();
-			}
-			if (m_cbPattern.getItemCount() > 0) {
-				m_cbPattern.setSelectedIndex(0);
-			}
-			if (m_cbFilter.getItemCount() > 0) {
-				m_cbFilter.setSelectedIndex(0);
-			}
+			selectFirstItem(m_cbFile);
+			selectFirstItem(m_cbPattern);
+			selectFirstItem(m_cbFilter);
+			
+			//update BL 
+			setSelectedFile();			
 			updateSettings(null);
 		}
 
@@ -126,6 +133,13 @@ public class MainFrame extends JFrame implements ActionListener {
 		mainPanel.add(sp, BorderLayout.CENTER);
 		
 		getContentPane().add(mainPanel);
+	}
+
+	private void selectFirstItem(JComboBox cb) {
+		if (cb.getItemCount() > 0) {
+			cb.setSelectedIndex(0);
+			
+		}
 	}
 	
 	public void updateSettings(String file) {
@@ -159,6 +173,9 @@ public class MainFrame extends JFrame implements ActionListener {
 			}
 		} else if (e.getSource() == m_cbFile) {
 			setSelectedFile();
+		} else if (e.getSource() == m_cbFilter) {
+			int i=0;
+			i++;
 		}
 	}
 	
@@ -177,15 +194,21 @@ public class MainFrame extends JFrame implements ActionListener {
 	
 	public void loadFile(File file) {		
 		//TODO: move to controller:
+		
+		//filter
 		LogTableFilter tf = null;
-		String filter = m_cbFilter.getSelectedItem().toString();
+		String filter = m_cbFilter.getEditor().getItem().toString();
 		if (filter.equals("") == false) {
 			tf = new LogTableFilter(filter);
 		}
 		
+		//pattern
+		String pattern = m_cbPattern.getEditor().getItem().toString();
+		
+		//autoreload
 		boolean autoReload = m_cbAutoReload.isSelected();
 		
-		m_tblLogs.setFile(file, m_cbPattern.getSelectedItem().toString(), tf, autoReload);		
+		m_tblLogs.setFile(file, pattern, tf, autoReload);		
 	}
 
 	

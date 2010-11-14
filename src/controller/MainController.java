@@ -1,3 +1,5 @@
+package controller;
+
 import generated.Settings.Files.F;
 
 import java.io.File;
@@ -6,6 +8,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 import setup.UyooSettings;
+import swing.MainFrame;
 
 public class MainController {
 
@@ -40,7 +43,7 @@ public class MainController {
 			
 			m_gui.updateSettings(m_selectedFile.getAbsolutePath());
 			
-			loadFile();
+			//loadFile();
 		}
 	}
 	
