@@ -19,8 +19,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import controller.MainController;
-
 import setup.UyooSettings;
 import swing.SetupComboBox.SetupComboBoxEditor;
 import swing.SetupComboBox.SetupComboBoxModel;
@@ -30,6 +28,7 @@ import swing.SetupComboBox.SetupComboBoxModelPattern;
 import table.LogTable;
 import table.LogTableFilter;
 import table.LogTableModel;
+import controller.MainController;
 
 
 @SuppressWarnings("serial")
@@ -48,74 +47,95 @@ public class MainFrame extends JFrame implements ActionListener {
 	private LogTableModel m_logTableModel;
 	
 	private JCheckBox  m_cbAutoReload;
+
+	private JLabel m_lblFile;
+	private JLabel m_lblPattern;
+	private JLabel m_lblFilter;
+	private JLabel m_lblEmpty;
 	
 	
 	public MainFrame() {
 		super(UyooSettings.getInstance().getApplicationName() 
-		      + " - "
+		      + " "
 		      + UyooSettings.getInstance().getVersionNumber());
-		
-		setSize(800, 600);
-		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		m_controller = new MainController(this);
 		
+		setSize(800, 600);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
 		initComponents();
+		arrangeComponents();
 	}
 	
-	private void initComponents() {
+	private void arrangeComponents() {
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BorderLayout());
+		getContentPane().add(mainPanel);
 
+		//North
 		{
 			JPanel pnlNorth = new JPanel();
-			pnlNorth.setLayout(new GridLayout(3, 1));
+			pnlNorth.setLayout(new GridLayout(4, 2));
 			
 			//File
-			initElements();
-			
 			JPanel pnlFile = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			pnlFile.add(new JLabel("File:"));
+			m_lblFile = new JLabel("File:");
+			pnlFile.add(m_lblFile);
 			pnlFile.add(m_cbFile);
-			pnlFile.add(m_btnOpen);
-			pnlFile.add(m_btnReload);
-			pnlFile.add(m_cbAutoReload);
+			
+			//Buttons
+			JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			m_lblEmpty = new JLabel("");
+			pnlButtons.add(m_lblEmpty);
+			pnlButtons.add(m_btnOpen);
+			pnlButtons.add(m_btnReload);
+			pnlButtons.add(m_cbAutoReload);
 			
 			//Pattern
 			JPanel pnlPattern = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			pnlPattern.add(new JLabel("Pattern:"));
+			m_lblPattern = new JLabel("Pattern:");
+			pnlPattern.add(m_lblPattern);
 			pnlPattern.add(m_cbPattern);
 			
 			//Filter
 			JPanel pnlFilter = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			pnlFilter.add(new JLabel("Filter:"));
+			m_lblFilter = new JLabel("Filter:");
+			pnlFilter.add(m_lblFilter);
 			pnlFilter.add(m_cbFilter);
 			
-			pnlNorth.add(pnlFile);			
+			pnlNorth.add(pnlFile);
+			pnlNorth.add(pnlButtons);			
 			pnlNorth.add(pnlPattern);
 			pnlNorth.add(pnlFilter);
 			
+			//recalculate prefered size for lables
+			{
+				int maxWidth = m_lblFile.getPreferredSize().width;
+				maxWidth = Math.max(maxWidth, m_lblFilter.getPreferredSize().width);
+				maxWidth = Math.max(maxWidth, m_lblPattern.getPreferredSize().width);
+				maxWidth = Math.max(maxWidth, m_lblEmpty.getPreferredSize().width);
+				
+				m_lblFile.setPreferredSize(new Dimension(maxWidth, m_lblFile.getPreferredSize().height));
+				m_lblFilter.setPreferredSize(new Dimension(maxWidth, m_lblFilter.getPreferredSize().height));
+				m_lblPattern.setPreferredSize(new Dimension(maxWidth, m_lblPattern.getPreferredSize().height));
+				m_lblEmpty.setPreferredSize(new Dimension(maxWidth, m_lblEmpty.getPreferredSize().height));
+			}
+			
+			
 			mainPanel.add(pnlNorth, BorderLayout.NORTH);
-			
-			selectFirstItem(m_cbFile);
-			selectFirstItem(m_cbPattern);
-			selectFirstItem(m_cbFilter);
-			
-			//update BL 
-			setSelectedFile();			
-			updateSettings(null);
 		}
 
-	    m_logTableModel = new LogTableModel(); 
-		m_tblLogs = new LogTable(m_logTableModel);
-		JScrollPane sp = new JScrollPane(m_tblLogs, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		mainPanel.add(sp, BorderLayout.CENTER);
-		
-		getContentPane().add(mainPanel);
+		//Center
+		{
+		    m_logTableModel = new LogTableModel(); 
+			m_tblLogs = new LogTable(m_logTableModel);
+			JScrollPane sp = new JScrollPane(m_tblLogs, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+			mainPanel.add(sp, BorderLayout.CENTER);
+		}
 	}
 
-	private void initElements() {
+	private void initComponents() {
 		Settings settings = UyooSettings.getInstance().getPersistentSettings();
 		
 		m_cbFile = new JComboBox(new SetupComboBoxModelFile(settings.getFiles().getF()));
@@ -142,6 +162,14 @@ public class MainFrame extends JFrame implements ActionListener {
 		m_cbFilter.setEditor(new SetupComboBoxEditor());
 		m_cbFilter.setEditable(true);
 		m_cbFilter.addActionListener(this);
+		
+		selectFirstItem(m_cbFile);
+		selectFirstItem(m_cbPattern);
+		selectFirstItem(m_cbFilter);
+		
+		//update BL 
+		setSelectedFile();			
+		updateSettings(null);
 	}
 
 	private void selectFirstItem(JComboBox cb) {
