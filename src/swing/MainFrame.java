@@ -67,25 +67,14 @@ public class MainFrame extends JFrame implements ActionListener {
 	private void initComponents() {
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BorderLayout());
-		
-		Settings settings = UyooSettings.getInstance().getPersistentSettings();
 
 		{
 			JPanel pnlNorth = new JPanel();
 			pnlNorth.setLayout(new GridLayout(3, 1));
 			
 			//File
-			m_cbFile = new JComboBox(new SetupComboBoxModelFile(settings.getFiles().getF()));
-			m_cbFile.setPreferredSize(new Dimension(600, m_cbFile.getPreferredSize().height));
-			m_cbFile.setEditable(false);
-			m_cbFile.addActionListener(this);
-			m_btnOpen = new JButton("Select");
-			m_btnOpen.addActionListener(this);
-			m_btnReload = new JButton("(Re)Load");
-			m_btnReload.addActionListener(this);
-			m_cbAutoReload = new JCheckBox("Autoreload");
-			m_cbAutoReload.setSelected(false);
-			m_cbAutoReload.addActionListener(this);
+			initElements();
+			
 			JPanel pnlFile = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			pnlFile.add(new JLabel("File:"));
 			pnlFile.add(m_cbFile);
@@ -95,20 +84,11 @@ public class MainFrame extends JFrame implements ActionListener {
 			
 			//Pattern
 			JPanel pnlPattern = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			m_cbPattern = new JComboBox(new SetupComboBoxModelPattern(settings.getPattern().getP()));
-			m_cbPattern.setEditor(new SetupComboBoxEditor());
-			m_cbPattern.setEditable(true);
-			m_cbPattern.setPreferredSize(new Dimension(400, m_cbPattern.getPreferredSize().height));
 			pnlPattern.add(new JLabel("Pattern:"));
 			pnlPattern.add(m_cbPattern);
 			
 			//Filter
 			JPanel pnlFilter = new JPanel(new FlowLayout(FlowLayout.LEFT));
-			m_cbFilter = new JComboBox(new SetupComboBoxModelFilter(settings.getFilter().getF()));
-			m_cbFilter.setPreferredSize(new Dimension(400, m_cbFilter.getPreferredSize().height));
-			m_cbFilter.setEditor(new SetupComboBoxEditor());
-			m_cbFilter.setEditable(true);
-			m_cbFilter.addActionListener(this);
 			pnlFilter.add(new JLabel("Filter:"));
 			pnlFilter.add(m_cbFilter);
 			
@@ -133,6 +113,35 @@ public class MainFrame extends JFrame implements ActionListener {
 		mainPanel.add(sp, BorderLayout.CENTER);
 		
 		getContentPane().add(mainPanel);
+	}
+
+	private void initElements() {
+		Settings settings = UyooSettings.getInstance().getPersistentSettings();
+		
+		m_cbFile = new JComboBox(new SetupComboBoxModelFile(settings.getFiles().getF()));
+		m_cbFile.setPreferredSize(new Dimension(600, m_cbFile.getPreferredSize().height));
+		m_cbFile.setEditable(false);
+		m_cbFile.addActionListener(this);
+		
+		m_btnOpen = new JButton("Select");
+		m_btnOpen.addActionListener(this);
+		m_btnReload = new JButton("(Re)Load");
+		m_btnReload.addActionListener(this);
+		
+		m_cbAutoReload = new JCheckBox("Autoreload");
+		m_cbAutoReload.setSelected(false);
+		m_cbAutoReload.addActionListener(this);
+		
+		m_cbPattern = new JComboBox(new SetupComboBoxModelPattern(settings.getPattern().getP()));
+		m_cbPattern.setEditor(new SetupComboBoxEditor());
+		m_cbPattern.setEditable(true);
+		m_cbPattern.setPreferredSize(new Dimension(400, m_cbPattern.getPreferredSize().height));
+		
+		m_cbFilter = new JComboBox(new SetupComboBoxModelFilter(settings.getFilter().getF()));
+		m_cbFilter.setPreferredSize(new Dimension(400, m_cbFilter.getPreferredSize().height));
+		m_cbFilter.setEditor(new SetupComboBoxEditor());
+		m_cbFilter.setEditable(true);
+		m_cbFilter.addActionListener(this);
 	}
 
 	private void selectFirstItem(JComboBox cb) {

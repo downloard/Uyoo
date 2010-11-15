@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings>
     <files>
-        <f>resources/test.out</f>
-        <f>C:\projects\PASA-GM\Trunk_GTF\Boards\_workspaces_speech\_Win32_OGLES2_Debug_Delivery\output\ssp.log.log</f>
-        <f>C:\Documents and Settings\hemo8078\My Documents\Visual Studio 2008\Projects\VSMacros80\Samples\Samples.vsmacros</f>
-        <f>C:\Temp\setup.ext.rss.txt</f>
-        <f>C:\Temp\ssp.log.log</f>
-        <f>C:\Temp\sdm.patch</f>
+        <f>resources\test.out</f>
     </files>
     <pattern>
         <p name="Test">^(.*?)-(.*?)-(.*?)-(.*?)$</p>
