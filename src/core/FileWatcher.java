@@ -1,29 +1,16 @@
 package core;
 
 import java.io.File;
-import java.util.TimerTask;
 
-/*
- * HOW TO USE
- * 
- * public static void main(String args[]) {
- *   // monitor a single file
- *   TimerTask task = new FileWatcher( new File("c:/temp/text.txt") ) {
- *     protected void onChange( File file ) {
- *       // here we code the action on a change
- *       System.out.println( "File "+ file.getName() +" have change !" );
- *     }
- *   };
- *
- *   Timer timer = new Timer();
- *   // repeat the check every second
- *   timer.schedule( task , new Date(), 1000 );
- * }
- */
+public abstract class FileWatcher implements Runnable {
+	
+	public static final int AUTORELOAD_PERIODE = 1000;
+	
+	private long    m_timeStamp;
+	private File    m_file;
 
-public abstract class FileWatcher extends TimerTask {
-	private long m_timeStamp;
-	private File m_file;
+	private Thread  m_thread;
+	private boolean m_run;
 
 	public FileWatcher(File file) {
 		setFile(file);
@@ -36,13 +23,45 @@ public abstract class FileWatcher extends TimerTask {
 		this.m_file = file;
 		this.m_timeStamp = file.lastModified();
 	}
+	
+	public synchronized void start() {
+		if (m_thread == null) {
+			m_run = true;
+			m_thread = new Thread(this);
+			m_thread.start();
+		}
+	}
+	
+	public synchronized void stop() {
+		m_run = false;
+		if (m_thread == null) {
+			try {
+				m_thread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} finally {
+				m_thread = null;
+			}
+		}
+	}
 
-	public final void run() {
-		long timeStamp = m_file.lastModified();
-
-		if (this.m_timeStamp != timeStamp) {
-			this.m_timeStamp = timeStamp;
-			onChange(m_file);
+	@Override
+	public final void run() {				
+		while (m_run) {	
+			long timeStamp = m_file.lastModified();
+			
+			if (this.m_timeStamp != timeStamp) {
+				this.m_timeStamp = timeStamp;
+				onChange(m_file);
+			}
+			
+			//sleep
+			try {
+				Thread.sleep(AUTORELOAD_PERIODE);
+			} catch (InterruptedException ex) {
+				ex.printStackTrace();
+				break;
+			}
 		}
 	}
 

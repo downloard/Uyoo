@@ -1,7 +1,5 @@
 package table;
 import java.io.File;
-import java.util.Date;
-import java.util.Timer;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -12,13 +10,12 @@ import data.LogFile;
 @SuppressWarnings("serial")
 public class LogTableModel extends AbstractTableModel {
 	
-	private static final int AUTORELOAD_PERIOD = 1000;
-	
-	private LogFile     m_logFile;
-	private Timer       m_fileWatcher;
+	private LogFile        m_logFile;
 	
 	private String         m_currentPattern;
 	private LogTableFilter m_currentFilter;
+
+	private FileWatcher    m_watcher;
 	
 	
 	public LogTableModel() {
@@ -29,7 +26,7 @@ public class LogTableModel extends AbstractTableModel {
 	{	
 		stopAutoReload();
 		
-		m_currentFilter = filter;
+		m_currentFilter  = filter;
 		m_currentPattern = pattern;
 		
 		int oldGroupSize = m_logFile.getGroupCount();
@@ -44,7 +41,6 @@ public class LogTableModel extends AbstractTableModel {
 			fireTableDataChanged();
 		}
 		
-		
 		if (autoReload) {
 			startAutoreload();
 		}
@@ -52,8 +48,12 @@ public class LogTableModel extends AbstractTableModel {
 
 	public void startAutoreload() {
 		stopAutoReload();
-		m_fileWatcher = new Timer();
-		FileWatcher worker = new FileWatcher(m_logFile.getFile()) {
+		
+		if (m_logFile.getFile() == null) {
+			return;
+		}
+		
+		m_watcher = new FileWatcher(m_logFile.getFile()) {
 			@Override
 			protected void onChange(File file) {
 				m_logFile.reloadFile();
@@ -61,13 +61,12 @@ public class LogTableModel extends AbstractTableModel {
 				fireTableDataChanged();
 			}
 		};
-		m_fileWatcher.schedule(worker, new Date(), AUTORELOAD_PERIOD);
+		m_watcher.start();
 	}	
 	
 	public void stopAutoReload() {
-		if (m_fileWatcher != null) {
-			m_fileWatcher.cancel();
-			m_fileWatcher = null;
+		if (m_watcher != null) {
+			m_watcher.stop();
 		}
 	}
 	
