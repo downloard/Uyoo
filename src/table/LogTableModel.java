@@ -46,7 +46,7 @@ public class LogTableModel extends AbstractTableModel {
 		}
 	}
 
-	public void startAutoreload() {
+	public synchronized void startAutoreload() {
 		stopAutoReload();
 		
 		if (m_logFile.getFile() == null) {
@@ -64,7 +64,7 @@ public class LogTableModel extends AbstractTableModel {
 		m_watcher.start();
 	}	
 	
-	public void stopAutoReload() {
+	public synchronized void stopAutoReload() {
 		if (m_watcher != null) {
 			m_watcher.stop();
 		}
