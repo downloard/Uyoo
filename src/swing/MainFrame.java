@@ -53,6 +53,8 @@ public class MainFrame extends JFrame implements ActionListener {
 	private JLabel m_lblFilter;
 	private JLabel m_lblEmpty;
 	
+	private boolean initDone = false;
+	
 	
 	public MainFrame() {
 		super(UyooSettings.getInstance().getApplicationName() 
@@ -66,6 +68,8 @@ public class MainFrame extends JFrame implements ActionListener {
 		
 		initComponents();
 		arrangeComponents();
+		
+		initDone = true;
 	}
 	
 	private void arrangeComponents() {
@@ -83,12 +87,12 @@ public class MainFrame extends JFrame implements ActionListener {
 			m_lblFile = new JLabel("File:");
 			pnlFile.add(m_lblFile);
 			pnlFile.add(m_cbFile);
+			pnlFile.add(m_btnOpen);
 			
 			//Buttons
 			JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			m_lblEmpty = new JLabel("");
 			pnlButtons.add(m_lblEmpty);
-			pnlButtons.add(m_btnOpen);
 			pnlButtons.add(m_btnReload);
 			pnlButtons.add(m_cbAutoReload);
 			
@@ -143,7 +147,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		m_cbFile.setEditable(false);
 		m_cbFile.addActionListener(this);
 		
-		m_btnOpen = new JButton("Select");
+		m_btnOpen = new JButton("...");
 		m_btnOpen.addActionListener(this);
 		m_btnReload = new JButton("(Re)Load");
 		m_btnReload.addActionListener(this);
@@ -197,8 +201,13 @@ public class MainFrame extends JFrame implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		if (initDone == false) {
+			return;
+		}
+		
 		if (e.getSource() == m_btnOpen) {
 			m_controller.selectFile();
+			m_controller.loadFile();
 		} else if (e.getSource() == m_btnReload) {
 			m_controller.loadFile();
 		} else if (e.getSource() == m_cbAutoReload) {
@@ -210,9 +219,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			}
 		} else if (e.getSource() == m_cbFile) {
 			setSelectedFile();
-		} else if (e.getSource() == m_cbFilter) {
-			int i=0;
-			i++;
+			m_controller.loadFile();
 		}
 	}
 	
