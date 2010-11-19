@@ -17,15 +17,21 @@ public class LogFile {
 	
 	private Vector<LogLine> m_lines;
 	private Vector<LogLine> m_viewport;
+	
+	private Vector<ILogFileListener> m_listeners;
 
 	private int m_groupCount;
 	
-	public LogFile() {	
-		m_groupCount = 0;
-		m_lines = new Vector<LogLine>();
+	public LogFile() {
+		m_listeners = new Vector<ILogFileListener>();
 	}
 
 	public void readFile(File file) {
+		//init data
+		m_groupCount = 0;
+		m_lines = new Vector<LogLine>();
+		
+		//now load
 		m_file = file;
 		reloadFile();
 	}
@@ -45,14 +51,15 @@ public class LogFile {
 			
 			br.close();
 		} catch (Exception e) {
-			//TODO: handle
+			//TODO: handle exception
 			e.printStackTrace();
 			return;
 		}
 	}
 	
-	//TODO: maybe bool as result -> gui update or not
 	public void updateViewport(String pattern, LogTableFilter filter) {
+		int oldGroupCount = getGroupCount();
+		
 		//reset
 		m_groupCount = 1;
 		m_viewport = new Vector<LogLine>();
@@ -114,8 +121,17 @@ public class LogFile {
 				}
 			}
 		}			
+		
+		//inform listeners
+		{
+			if (oldGroupCount != getGroupCount()) {	
+				fireStructureChanged();
+			} else {
+				fireDataChanged();
+			}
+		}
 	}
-	
+
 	public int getGroupCount() {
 		return m_groupCount;
 	}
@@ -129,12 +145,30 @@ public class LogFile {
 	}
 	
 	public String getData(int line, int group) {
-		{
-			return m_viewport.get(line).getGroupText(group);
-		}
+		return m_viewport.get(line).getGroupText(group);
 	}
 
 	public File getFile() {
 		return m_file;
+	}
+	
+	private void fireDataChanged() {
+		for (ILogFileListener next : m_listeners) {
+			next.dataChanged();
+		}
+	}
+
+	private void fireStructureChanged() {
+		for (ILogFileListener next : m_listeners) {
+			next.structureChanged();
+		}
+	}
+	
+	public void addListener(ILogFileListener listener) {
+		m_listeners.add(listener);
+	}
+	
+	public void removeListener(ILogFileListener listener) {
+		m_listeners.remove(listener);
 	}
 }

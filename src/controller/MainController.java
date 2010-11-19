@@ -9,18 +9,34 @@ import javax.swing.JOptionPane;
 
 import setup.UyooSettings;
 import swing.MainFrame;
+import table.LogTableFilter;
+import core.FileWatcher;
+import data.LogFile;
 
 public class MainController {
 
-	private File m_selectedFile;
+	private LogFile        m_logFile;
+	private File           m_selectedFile;
+
+	private String         m_currentPattern;
+	private LogTableFilter m_currentFilter;
+
+	private FileWatcher    m_watcher;
 	
-	private MainFrame m_gui;
+	private MainFrame      m_gui;
+
 	
 	public MainController(MainFrame gui) {
 		m_selectedFile = null;
 		m_gui = gui;
+		
+		m_logFile = new LogFile();
 	}
 
+	public LogFile getLogFile() {
+		return m_logFile;
+	}
+	
 	public void setSelectedFile(String filename) {
 		m_selectedFile = new File(filename);		
 	}
@@ -79,6 +95,51 @@ public class MainController {
 
 			//save persistent
 			UyooSettings.getInstance().saveConfigFile();
+		}
+	}
+
+	public void setFile(File file, String pattern, LogTableFilter filter, boolean autoReload) {
+		stopAutoReload();	
+		
+		m_currentFilter  = filter;
+		m_currentPattern = pattern;
+		
+		m_logFile.readFile(file);
+		m_logFile.updateViewport(pattern, filter);
+		
+		if (autoReload) {
+			startAutoreload();
+		}
+	}
+
+	public synchronized void startAutoreload() {
+		stopAutoReload();
+		
+		if (m_logFile.getFile() == null) {
+			return;
+		}
+		
+		m_watcher = new FileWatcher(m_logFile.getFile()) {
+			@Override
+			protected void onChange(File file) {
+				m_logFile.reloadFile();
+				m_logFile.updateViewport(m_currentPattern, m_currentFilter);
+			}
+		};
+		m_watcher.start();
+	}	
+	
+	public synchronized void stopAutoReload() {
+		if (m_watcher != null) {
+			m_watcher.stop();
+		}
+	}
+
+	public void setAutoreload(boolean selected) {
+		if (selected) {
+			startAutoreload();
+		} else {
+			stopAutoReload();
 		}
 	}
 }

@@ -66,8 +66,12 @@ public class MainFrame extends JFrame implements ActionListener {
 		setSize(800, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
+		//init GUI
 		initComponents();
 		arrangeComponents();
+		
+		//glue logic with gui
+		m_logTableModel.setLogFile( m_controller.getLogFile() );
 		
 		initDone = true;
 	}
@@ -211,12 +215,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		} else if (e.getSource() == m_btnReload) {
 			m_controller.loadFile();
 		} else if (e.getSource() == m_cbAutoReload) {
-			//TODO: move to controller
-			if (m_cbAutoReload.isSelected()) {
-				m_logTableModel.startAutoreload();
-			} else {
-				m_logTableModel.stopAutoReload();
-			}
+			m_controller.setAutoreload(m_cbAutoReload.isSelected());
 		} else if (e.getSource() == m_cbFile) {
 			setSelectedFile();
 			m_controller.loadFile();
@@ -252,7 +251,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		//autoreload
 		boolean autoReload = m_cbAutoReload.isSelected();
 		
-		m_tblLogs.setFile(file, pattern, tf, autoReload);		
+		m_controller.setFile(file, pattern, tf, autoReload);		
 	}
 
 	
