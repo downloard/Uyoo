@@ -26,9 +26,9 @@ import swing.SetupComboBox.SetupComboBoxModelFile;
 import swing.SetupComboBox.SetupComboBoxModelFilter;
 import swing.SetupComboBox.SetupComboBoxModelPattern;
 import table.LogTable;
-import table.LogTableFilter;
 import table.LogTableModel;
 import controller.MainController;
+import data.LogFileFilter;
 
 
 @SuppressWarnings("serial")
@@ -239,10 +239,10 @@ public class MainFrame extends JFrame implements ActionListener {
 		//TODO: move to controller:
 		
 		//filter
-		LogTableFilter tf = null;
+		LogFileFilter tf = null;
 		String filter = m_cbFilter.getEditor().getItem().toString();
 		if (filter.equals("") == false) {
-			tf = new LogTableFilter(filter);
+			tf = new LogFileFilter(filter);
 		}
 		
 		//pattern

@@ -9,9 +9,9 @@ import javax.swing.JOptionPane;
 
 import setup.UyooSettings;
 import swing.MainFrame;
-import table.LogTableFilter;
 import core.FileWatcher;
 import data.LogFile;
+import data.LogFileFilter;
 
 public class MainController {
 
@@ -19,7 +19,7 @@ public class MainController {
 	private File           m_selectedFile;
 
 	private String         m_currentPattern;
-	private LogTableFilter m_currentFilter;
+	private LogFileFilter  m_currentFilter;
 
 	private FileWatcher    m_watcher;
 	
@@ -98,7 +98,7 @@ public class MainController {
 		}
 	}
 
-	public void setFile(File file, String pattern, LogTableFilter filter, boolean autoReload) {
+	public void setFile(File file, String pattern, LogFileFilter filter, boolean autoReload) {
 		stopAutoReload();	
 		
 		m_currentFilter  = filter;

@@ -9,8 +9,6 @@ import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
 
-import table.LogTableFilter;
-
 public class LogFile {
 
 	private File m_file;
@@ -57,7 +55,7 @@ public class LogFile {
 		}
 	}
 	
-	public void updateViewport(String pattern, LogTableFilter filter) {
+	public void updateViewport(String pattern, LogFileFilter filter) {
 		int oldGroupCount = getGroupCount();
 		
 		//reset

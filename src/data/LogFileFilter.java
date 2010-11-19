@@ -1,11 +1,10 @@
-package table;
+package data;
 
-public class LogTableFilter {
-
+public class LogFileFilter {
 	int m_column;
 	String m_text;
 	
-	public LogTableFilter(String text) {
+	public LogFileFilter(String text) {
 		String[] arr = text.split(":");
 		m_column = Integer.parseInt(arr[0]);
 		m_text = arr[1];
