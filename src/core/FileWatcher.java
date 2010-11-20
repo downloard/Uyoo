@@ -46,7 +46,8 @@ public abstract class FileWatcher implements Runnable {
 	}
 
 	@Override
-	public final void run() {				
+	public final void run() {			
+		UyooLogger.getLogger().debug("Running file watcher thread");
 		while (m_run) {	
 			long timeStamp = m_file.lastModified();
 			
@@ -63,6 +64,7 @@ public abstract class FileWatcher implements Runnable {
 				break;
 			}
 		}
+		UyooLogger.getLogger().debug("File watcher Thread ends");
 	}
 
 	protected abstract void onChange(File file);

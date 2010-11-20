@@ -10,6 +10,7 @@ import javax.swing.JOptionPane;
 import setup.UyooSettings;
 import swing.MainFrame;
 import core.FileWatcher;
+import core.UyooLogger;
 import data.LogFile;
 import data.LogFileFilter;
 
@@ -38,6 +39,7 @@ public class MainController {
 	}
 	
 	public void setSelectedFile(String filename) {
+		UyooLogger.getLogger().debug("Set selected file: " + filename);
 		m_selectedFile = new File(filename);		
 	}
 	
@@ -119,9 +121,11 @@ public class MainController {
 			return;
 		}
 		
+		UyooLogger.getLogger().debug("starting auto reload");
 		m_watcher = new FileWatcher(m_logFile.getFile()) {
 			@Override
 			protected void onChange(File file) {
+				UyooLogger.getLogger().debug("OnChange from autoreload arrived");
 				m_logFile.reloadFile();
 				m_logFile.updateViewport(m_currentPattern, m_currentFilter);
 			}
@@ -130,6 +134,7 @@ public class MainController {
 	}	
 	
 	public synchronized void stopAutoReload() {
+		UyooLogger.getLogger().debug("stopping auto reload");
 		if (m_watcher != null) {
 			m_watcher.stop();
 		}
