@@ -225,7 +225,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	public File selectFile() {	
 		JFileChooser fc = new JFileChooser();
 		if (m_controller.getSelectedFile() != null) {
-			fc.setSelectedFile(m_controller.getSelectedFile());
+			fc.setSelectedFile(m_controller.getSelectedFile().getAbsoluteFile());
 		}
 		int state = fc.showOpenDialog(this);
 		if ( state == JFileChooser.APPROVE_OPTION ) {
