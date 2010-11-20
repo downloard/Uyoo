@@ -7,6 +7,8 @@ public abstract class FileWatcher implements Runnable {
 	public static final int AUTORELOAD_PERIODE = 1000;
 	
 	private long    m_timeStamp;
+	private long    m_size;
+	
 	private File    m_file;
 
 	private Thread  m_thread;
@@ -22,6 +24,7 @@ public abstract class FileWatcher implements Runnable {
 	public void setFile(File file) {
 		this.m_file = file;
 		this.m_timeStamp = file.lastModified();
+		this.m_size = file.length();
 	}
 	
 	public synchronized void start() {
@@ -50,9 +53,13 @@ public abstract class FileWatcher implements Runnable {
 		UyooLogger.getLogger().debug("Running file watcher thread");
 		while (m_run) {	
 			long timeStamp = m_file.lastModified();
+			long size = m_file.length();
 			
-			if (this.m_timeStamp != timeStamp) {
-				this.m_timeStamp = timeStamp;
+			if ((m_timeStamp != timeStamp) | (size != m_size)) {
+				m_timeStamp = timeStamp;
+				m_size = size;
+				
+				//invoke callback
 				onChange(m_file);
 			}
 			
