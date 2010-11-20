@@ -134,8 +134,8 @@ public class MainController {
 	}	
 	
 	public synchronized void stopAutoReload() {
-		UyooLogger.getLogger().debug("stopping auto reload");
 		if (m_watcher != null) {
+			UyooLogger.getLogger().debug("stopping auto reload");
 			m_watcher.stop();
 		}
 	}

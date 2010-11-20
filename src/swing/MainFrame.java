@@ -25,8 +25,8 @@ import swing.SetupComboBox.SetupComboBoxModel;
 import swing.SetupComboBox.SetupComboBoxModelFile;
 import swing.SetupComboBox.SetupComboBoxModelFilter;
 import swing.SetupComboBox.SetupComboBoxModelPattern;
-import table.LogTable;
-import table.LogTableModel;
+import swing.table.LogTable;
+import swing.table.LogTableModel;
 import controller.MainController;
 import data.LogFileFilter;
 

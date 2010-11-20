@@ -1,4 +1,4 @@
-package table;
+package swing.table;
 import javax.swing.table.AbstractTableModel;
 
 import data.ILogFileListener;
