@@ -25,6 +25,7 @@ import swing.SetupComboBox.SetupComboBoxModel;
 import swing.SetupComboBox.SetupComboBoxModelFile;
 import swing.SetupComboBox.SetupComboBoxModelFilter;
 import swing.SetupComboBox.SetupComboBoxModelPattern;
+import swing.components.StatusBarFrame;
 import swing.table.LogTable;
 import swing.table.LogTableModel;
 import controller.MainController;
@@ -32,7 +33,7 @@ import data.LogFileFilter;
 
 
 @SuppressWarnings("serial")
-public class MainFrame extends JFrame implements ActionListener {
+public class MainFrame extends StatusBarFrame implements ActionListener {
 	
 	private MainController m_controller;
 	
@@ -57,9 +58,8 @@ public class MainFrame extends JFrame implements ActionListener {
 	
 	
 	public MainFrame() {
-		super(UyooSettings.getInstance().getApplicationName() 
-		      + " "
-		      + UyooSettings.getInstance().getVersionNumber());
+		super();
+		setTitle(null);
 		
 		m_controller = new MainController(this);
 		
@@ -74,6 +74,19 @@ public class MainFrame extends JFrame implements ActionListener {
 		m_logTableModel.setLogFile( m_controller.getLogFile() );
 		
 		initDone = true;
+	}
+	
+	@Override
+	public void setTitle(String title) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(UyooSettings.getInstance().getApplicationName()); 
+		sb.append(" ");
+		sb.append(UyooSettings.getInstance().getVersionNumber());
+		if (title != null) {
+			sb.append(" - ");
+			sb.append(title);
+		}
+		super.setTitle(sb.toString());
 	}
 	
 	private void arrangeComponents() {
@@ -254,5 +267,31 @@ public class MainFrame extends JFrame implements ActionListener {
 		m_controller.setFile(file, pattern, tf, autoReload);		
 	}
 
-	
+	public void updateFileInformation(File file) {
+		setTitle(file.getAbsolutePath());
+
+		
+		long fileSize = file.length();
+		StringBuilder strSize = new StringBuilder("Size: ");
+		
+		if (fileSize > 1000*1000) {
+			//xx.xxMB
+			strSize.append(fileSize/1000/1000);
+			strSize.append(".");
+			//only first 2 digits
+			strSize.append((fileSize/1000/10)%(100)); 
+			strSize.append("MB");
+		} else if (fileSize > 1000) {
+			//xx.xxKB
+			strSize.append(fileSize/1000);
+			strSize.append(".");
+			//only first 2 digits
+			strSize.append((fileSize/10)%(100));
+			strSize.append("KB");
+		} else {
+			//xxBytes
+			strSize.append(fileSize + "Bytes");
+		}
+		setLeftText(strSize.toString());
+	}
 }

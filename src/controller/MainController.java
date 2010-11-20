@@ -108,6 +108,7 @@ public class MainController {
 		
 		m_logFile.readFile(file);
 		m_logFile.updateViewport(pattern, filter);
+		m_gui.updateFileInformation(m_selectedFile);
 		
 		if (autoReload) {
 			startAutoreload();
@@ -128,6 +129,7 @@ public class MainController {
 				UyooLogger.getLogger().debug("OnChange from autoreload arrived");
 				m_logFile.reloadFile();
 				m_logFile.updateViewport(m_currentPattern, m_currentFilter);
+				m_gui.updateFileInformation(m_selectedFile);
 			}
 		};
 		m_watcher.start();
