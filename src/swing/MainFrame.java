@@ -9,6 +9,8 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -268,30 +270,43 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 	}
 
 	public void updateFileInformation(File file) {
-		setTitle(file.getAbsolutePath());
-
-		
-		long fileSize = file.length();
-		StringBuilder strSize = new StringBuilder("Size: ");
-		
-		if (fileSize > 1000*1000) {
-			//xx.xxMB
-			strSize.append(fileSize/1000/1000);
-			strSize.append(".");
-			//only first 2 digits
-			strSize.append((fileSize/1000/10)%(100)); 
-			strSize.append("MB");
-		} else if (fileSize > 1000) {
-			//xx.xxKB
-			strSize.append(fileSize/1000);
-			strSize.append(".");
-			//only first 2 digits
-			strSize.append((fileSize/10)%(100));
-			strSize.append("KB");
-		} else {
-			//xxBytes
-			strSize.append(fileSize + "Bytes");
+		//JFrame title
+		{
+			setTitle(file.getAbsolutePath());
 		}
-		setLeftText(strSize.toString());
+
+		//File size informations
+		{
+			long fileSize = file.length();
+			StringBuilder strSize = new StringBuilder("Size: ");
+			
+			if (fileSize > 1000*1000) {
+				//xx.xxMB
+				strSize.append(fileSize/1000/1000);
+				strSize.append(".");
+				//only first 2 digits
+				strSize.append((fileSize/1000/10)%(100)); 
+				strSize.append("MB");
+			} else if (fileSize > 1000) {
+				//xx.xxKB
+				strSize.append(fileSize/1000);
+				strSize.append(".");
+				//only first 2 digits
+				strSize.append((fileSize/10)%(100));
+				strSize.append("KB");
+			} else {
+				//xxBytes
+				strSize.append(fileSize + "Bytes");
+			}
+			setLeftText(strSize.toString());
+		}
+		
+		//File time stamp informations
+		{
+			long date = file.lastModified();
+			DateFormat formatter = new SimpleDateFormat(); 
+			setMidlleText("Last Modified: " + formatter.format(date) );
+			
+		}
 	}
 }
