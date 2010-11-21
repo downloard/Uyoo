@@ -3,6 +3,15 @@
 	<property name="dirBin" value="./antbuild" />
 	<property name="dirDeploy" value="./deploy" />
 	<property name="dirResources" value="resources" />
+	<property name="dirLibs" value="libs" />
+	
+	<!-- Libs -->
+    <property file="./build.libs.properties" />   
+    
+    <!-- Classpath -->
+    <path id="classpath">
+        <pathelement path="${dirLibs}/${libLog4J}"/>
+    </path>
 	
 	<target name="clean">
 		<delete dir="${dirBin}" />
@@ -11,7 +20,7 @@
 	
 	<target name="compile" depends="clean">
 		<mkdir dir="${dirBin}" />
-		<javac srcdir="./src" destdir="${dirBin}" />
+		<javac srcdir="./src" destdir="${dirBin}"  classpathref="classpath" />
 	</target>
 	
 	<target name="deploy" depends="compile">
@@ -27,12 +36,22 @@
                 <attribute name="Main-Class" value="Uyoo"/>
 				<attribute name="Implementation-Version" 
 				           value="${fullVersion}"/> 
+                <attribute name="Class-Path" 
+                	       value="${dirLibs}/${libLog4J}"/>
             </manifest>
 		</jar>
 		
 		<mkdir dir="${dirDeploy}/${dirResources}" />
 		<copy tofile="${dirDeploy}/${dirResources}/settings.xml">        
             <file file="${dirResources}/settings.xml" />
+        </copy >
+		<copy tofile="${dirDeploy}/${dirResources}/log4j.properties">        
+	        <file file="${dirResources}/log4j.properties" />
+	    </copy >
+		
+		<mkdir dir="${dirDeploy}/${dirLibs}" />
+		<copy todir="${dirDeploy}/${dirLibs}">        
+            <fileset file="${dirLibs}/*.jar" />
         </copy >
 		
 		<zip destfile="${dirDeploy}/uyoo_v${fullVersion}.zip"
