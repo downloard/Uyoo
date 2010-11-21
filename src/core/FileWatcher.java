@@ -30,7 +30,7 @@ public abstract class FileWatcher implements Runnable {
 	public synchronized void start() {
 		if (m_thread == null) {
 			m_run = true;
-			m_thread = new Thread(this);
+			m_thread = new Thread(this, "FileWatcher");
 			m_thread.start();
 		}
 	}

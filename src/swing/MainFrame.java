@@ -18,6 +18,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -46,7 +47,7 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 	private JComboBox  m_cbPattern;
 	private JComboBox  m_cbFilter;
 	
-	private LogTable   m_tblLogs;
+	private LogTable      m_tblLogs;
 	private LogTableModel m_logTableModel;
 	
 	private JCheckBox  m_cbAutoReload;
@@ -172,12 +173,13 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 		m_btnReload.addActionListener(this);
 		
 		m_cbAutoReload = new JCheckBox("Autoreload");
-		m_cbAutoReload.setSelected(false);
+		m_cbAutoReload.setSelected(m_controller.isAutoReload());
 		m_cbAutoReload.addActionListener(this);
 		
 		m_cbPattern = new JComboBox(new SetupComboBoxModelPattern(settings.getPattern().getP()));
 		m_cbPattern.setEditor(new SetupComboBoxEditor());
 		m_cbPattern.setEditable(true);
+		m_cbPattern.addActionListener(this);
 		m_cbPattern.setPreferredSize(new Dimension(400, m_cbPattern.getPreferredSize().height));
 		
 		m_cbFilter = new JComboBox(new SetupComboBoxModelFilter(settings.getFilter().getF()));
@@ -192,13 +194,14 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 		
 		//update BL 
 		setSelectedFile();			
+		setSelectedPattern();
+		setSelectedFilter();
 		updateSettings(null);
 	}
 
 	private void selectFirstItem(JComboBox cb) {
 		if (cb.getItemCount() > 0) {
 			cb.setSelectedIndex(0);
-			
 		}
 	}
 	
@@ -224,17 +227,53 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 			return;
 		}
 		
+		//Open
 		if (e.getSource() == m_btnOpen) {
-			m_controller.selectFile();
-			m_controller.loadFile();
+			m_controller.selectAndAddFile();
+			
+		//(Re-)Load
 		} else if (e.getSource() == m_btnReload) {
-			m_controller.loadFile();
+			m_controller.openFile();
+			
+		//Autoreload
 		} else if (e.getSource() == m_cbAutoReload) {
 			m_controller.setAutoreload(m_cbAutoReload.isSelected());
+			
+		//File
 		} else if (e.getSource() == m_cbFile) {
 			setSelectedFile();
-			m_controller.loadFile();
+			m_controller.openFile();
+			
+		//Pattern
+		} else if (e.getSource() == m_cbPattern) {
+			setSelectedPattern();
+			
+		//Filter
+		//TODO: is it dirty to check "comboBoxChangeEvent" via string? 
+		} else if (e.getSource() == m_cbFilter 
+				   && e.getActionCommand().equals("comboBoxChanged")) {
+			setSelectedFilter();
 		}
+	}
+
+	private void setSelectedFilter() {
+		LogFileFilter tf = null;
+		try {
+			String filter = m_cbFilter.getEditor().getItem().toString();
+			if (filter.equals("") == false) {
+				tf = new LogFileFilter(filter);
+			}
+		} catch (IllegalArgumentException ex) {
+			JOptionPane.showMessageDialog(this, 
+										  "Illegal Filter", 
+					                      "Error",
+					                      JOptionPane.ERROR_MESSAGE);
+		}
+		m_controller.setSelectedFilter(tf);
+	}
+
+	private void setSelectedPattern() {
+		m_controller.setSelectedPattern( m_cbPattern.getEditor().getItem() );
 	}
 	
 	public File selectFile() {	
@@ -250,25 +289,6 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 	    }
 	}
 	
-	public void loadFile(File file) {		
-		//TODO: move to controller:
-		
-		//filter
-		LogFileFilter tf = null;
-		String filter = m_cbFilter.getEditor().getItem().toString();
-		if (filter.equals("") == false) {
-			tf = new LogFileFilter(filter);
-		}
-		
-		//pattern
-		String pattern = m_cbPattern.getEditor().getItem().toString();
-		
-		//autoreload
-		boolean autoReload = m_cbAutoReload.isSelected();
-		
-		m_controller.setFile(file, pattern, tf, autoReload);		
-	}
-
 	public void updateFileInformation(File file) {
 		//JFrame title
 		{

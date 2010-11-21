@@ -27,9 +27,4 @@ public class SetupComboBoxEditor extends JTextField implements ComboBoxEditor {
 	public Object getItem() {
 		return getText();
 	}
-
-	@Override
-	public void selectAll() {
-		// TODO Auto-generated method stub
-	}
 }

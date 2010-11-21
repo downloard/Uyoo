@@ -25,13 +25,16 @@ public class MainController {
 	private FileWatcher    m_watcher;
 	
 	private MainFrame      m_gui;
+	
+	private boolean        m_autoReload;
 
 	
 	public MainController(MainFrame gui) {
-		m_selectedFile = null;
 		m_gui = gui;
 		
-		m_logFile = new LogFile();
+		m_selectedFile = null;
+		m_autoReload   = false;
+		m_logFile      = new LogFile();
 	}
 
 	public LogFile getLogFile() {
@@ -52,7 +55,7 @@ public class MainController {
 		return m_selectedFile;
 	}
 
-	public void selectFile() {
+	public void selectAndAddFile() {
 		File selectedFile = m_gui.selectFile();
 		if (selectedFile != null) {
 			m_selectedFile = selectedFile;
@@ -61,16 +64,8 @@ public class MainController {
 			
 			m_gui.updateSettings(m_selectedFile.getAbsolutePath());
 			
-			//loadFile();
+			openFile();
 		}
-	}
-	
-	public void loadFile() {
-		if (m_selectedFile == null) {
-			JOptionPane.showMessageDialog(m_gui, "No file selected");
-			return;
-		}		
-		m_gui.loadFile(m_selectedFile);
 	}
 
 	/**
@@ -78,6 +73,7 @@ public class MainController {
 	 */
 	private void addNewFile() {
 		//add file to settings
+		//TODO: move this code to settings
 		List<F> files = UyooSettings.getInstance().getPersistentSettings().getFiles().getF();
 		//check if already in persistent data
 		boolean needToAdd = true;
@@ -99,20 +95,28 @@ public class MainController {
 			UyooSettings.getInstance().saveConfigFile();
 		}
 	}
-
-	public void setFile(File file, String pattern, LogFileFilter filter, boolean autoReload) {
+	
+	public void openFile() {
+		if (m_selectedFile == null) {
+			JOptionPane.showMessageDialog(m_gui, "No file selected");
+			return;
+		}	
+		
+		UyooLogger.getLogger().info("Open file \"" + m_selectedFile + "\"");
+		
 		stopAutoReload();	
 		
-		m_currentFilter  = filter;
-		m_currentPattern = pattern;
-		
-		m_logFile.readFile(file);
-		m_logFile.updateViewport(pattern, filter);
+		m_logFile.readFile(m_selectedFile);
+		m_logFile.updateViewport(m_currentPattern, m_currentFilter);
 		m_gui.updateFileInformation(m_selectedFile);
 		
-		if (autoReload) {
+		if (m_autoReload) {
 			startAutoreload();
 		}
+	}
+	
+	public boolean isAutoReload() {
+		return m_autoReload;
 	}
 
 	public synchronized void startAutoreload() {
@@ -126,7 +130,7 @@ public class MainController {
 		m_watcher = new FileWatcher(m_logFile.getFile()) {
 			@Override
 			protected void onChange(File file) {
-				UyooLogger.getLogger().debug("OnChange from autoreload arrived");
+				UyooLogger.getLogger().debug("File '" + file.getName() + "' changed");
 				m_logFile.reloadFile();
 				m_logFile.updateViewport(m_currentPattern, m_currentFilter);
 				m_gui.updateFileInformation(m_selectedFile);
@@ -142,11 +146,25 @@ public class MainController {
 		}
 	}
 
-	public void setAutoreload(boolean selected) {
-		if (selected) {
+	public void setAutoreload(boolean autoreload) {
+		UyooLogger.getLogger().debug("Set autoreload to " + autoreload);
+		m_autoReload = autoreload;
+		
+		//TODO: maybe refactor - do not start every time if already running
+		if (autoreload) {
 			startAutoreload();
 		} else {
 			stopAutoReload();
 		}
+	}
+
+	public void setSelectedPattern(Object pattern) {
+		UyooLogger.getLogger().debug("Set pattern to " + pattern);
+		m_currentPattern = pattern.toString();		
+	}
+
+	public void setSelectedFilter(LogFileFilter tf) {
+		UyooLogger.getLogger().debug("Set filter to " + tf);
+		m_currentFilter = tf;	
 	}
 }
