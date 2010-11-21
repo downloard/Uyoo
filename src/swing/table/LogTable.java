@@ -1,5 +1,7 @@
 package swing.table;
 
+import java.awt.Font;
+
 import javax.swing.JTable;
 
 
@@ -15,5 +17,6 @@ public class LogTable extends JTable {
 		
 		//set behavior
 		setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		setFont(new Font("Courier New", Font.PLAIN, 11));
 	}
 }
