@@ -20,6 +20,6 @@ public class LogFileFilter {
 	
 	@Override
 	public String toString() {
-		return m_text;
+		return "" + m_column + ":" + m_text;
 	}
 }

@@ -43,6 +43,8 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 	private JComboBox  m_cbFile;
 	private JButton    m_btnOpen; 
 	private JButton    m_btnReload;
+	private JButton    m_btnAddPattern;
+	private JButton    m_btnAddFilter;
 	
 	private JComboBox  m_cbPattern;
 	private JComboBox  m_cbFilter;
@@ -121,12 +123,14 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 			m_lblPattern = new JLabel("Pattern:");
 			pnlPattern.add(m_lblPattern);
 			pnlPattern.add(m_cbPattern);
+			pnlPattern.add(m_btnAddPattern);
 			
 			//Filter
 			JPanel pnlFilter = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			m_lblFilter = new JLabel("Filter:");
 			pnlFilter.add(m_lblFilter);
 			pnlFilter.add(m_cbFilter);
+			pnlFilter.add(m_btnAddFilter);
 			
 			pnlNorth.add(pnlFile);
 			pnlNorth.add(pnlButtons);			
@@ -169,8 +173,15 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 		
 		m_btnOpen = new JButton("...");
 		m_btnOpen.addActionListener(this);
-		m_btnReload = new JButton("(Re)Load");
+		
+		m_btnReload = new JButton("Reload");
 		m_btnReload.addActionListener(this);
+		
+		m_btnAddPattern = new JButton("Add");
+		m_btnAddPattern.addActionListener(this);
+		
+		m_btnAddFilter = new JButton("Add");
+		m_btnAddFilter.addActionListener(this);
 		
 		m_cbAutoReload = new JCheckBox("Autoreload");
 		m_cbAutoReload.setSelected(m_controller.isAutoReload());
@@ -196,7 +207,7 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 		setSelectedFile();			
 		setSelectedPattern();
 		setSelectedFilter();
-		updateSettings(null);
+		updateSettings();
 	}
 
 	private void selectFirstItem(JComboBox cb) {
@@ -205,7 +216,8 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 		}
 	}
 	
-	public void updateSettings(String file) {
+	public void updateSettings() {
+		String file = m_controller.getSelectedFile().getAbsolutePath();
 		if (file != null) {
 			//set selected item of combo box
 			m_cbFile.setSelectedItem(file);
@@ -245,7 +257,8 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 			m_controller.openFile();
 			
 		//Pattern
-		} else if (e.getSource() == m_cbPattern) {
+		} else if (e.getSource() == m_cbPattern
+				   && e.getActionCommand().equals("comboBoxChanged")) {
 			setSelectedPattern();
 			
 		//Filter
@@ -253,6 +266,14 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 		} else if (e.getSource() == m_cbFilter 
 				   && e.getActionCommand().equals("comboBoxChanged")) {
 			setSelectedFilter();
+		
+		//Add Pattern
+		} else if (e.getSource() == m_btnAddPattern) {
+			m_controller.saveCurrentPattern();
+		
+		//Add Filter
+		} else if (e.getSource() == m_btnAddFilter) {
+			m_controller.saveCurrentFilter();
 		}
 	}
 

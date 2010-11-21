@@ -1,6 +1,7 @@
 package controller;
 
 import generated.Settings.Files.F;
+import generated.Settings.Pattern.P;
 
 import java.io.File;
 import java.util.List;
@@ -60,9 +61,7 @@ public class MainController {
 		if (selectedFile != null) {
 			m_selectedFile = selectedFile;
 			
-			addNewFile();
-			
-			m_gui.updateSettings(m_selectedFile.getAbsolutePath());
+			saveSelectedFile();
 			
 			openFile();
 		}
@@ -71,7 +70,7 @@ public class MainController {
 	/**
 	 * Adds new file to persistent settings and GUI drop down
 	 */
-	private void addNewFile() {
+	private void saveSelectedFile() {
 		//add file to settings
 		//TODO: move this code to settings
 		List<F> files = UyooSettings.getInstance().getPersistentSettings().getFiles().getF();
@@ -93,6 +92,9 @@ public class MainController {
 
 			//save persistent
 			UyooSettings.getInstance().saveConfigFile();
+			
+			//inform gui
+			m_gui.updateSettings();
 		}
 	}
 	
@@ -166,5 +168,63 @@ public class MainController {
 	public void setSelectedFilter(LogFileFilter tf) {
 		UyooLogger.getLogger().debug("Set filter to " + tf);
 		m_currentFilter = tf;	
+	}
+
+	public void saveCurrentPattern() {
+		//check if pattern already exist
+		//TODO: move this code to settings
+		List<P> pattern = UyooSettings.getInstance().getPersistentSettings().getPattern().getP();
+		//check if already in persistent data
+		boolean needToAdd = true;
+		for(P next : pattern) {
+			if (next.getValue().equals(m_currentPattern)) {
+				needToAdd = false;
+				break;
+			}
+		}
+		
+		if (needToAdd == true) {
+			UyooLogger.getLogger().info("Save pattern " + m_currentPattern);
+			
+			//add to settings
+			P p = new P();
+			p.setValue(m_currentPattern);
+			pattern.add(p);
+
+			//save persistent
+			UyooSettings.getInstance().saveConfigFile();
+			
+			//inform gui
+			m_gui.updateSettings();
+		}
+	}
+
+	public void saveCurrentFilter() {
+		//check if pattern already exist
+		//TODO: move this code to settings
+		List<generated.Settings.Filter.F> filter = UyooSettings.getInstance().getPersistentSettings().getFilter().getF();
+		//check if already in persistent data
+		boolean needToAdd = true;
+		for(generated.Settings.Filter.F next : filter) {
+			if (next.getValue().equals(m_currentFilter.toString())) {
+				needToAdd = false;
+				break;
+			}
+		}
+		
+		if (needToAdd == true) {
+			UyooLogger.getLogger().info("Save filter " + m_currentFilter);
+			
+			//add to settings
+			generated.Settings.Filter.F f = new generated.Settings.Filter.F();
+			f.setValue(m_currentFilter.toString());
+			filter.add(f);
+
+			//save persistent
+			UyooSettings.getInstance().saveConfigFile();
+			
+			//inform gui
+			m_gui.updateSettings();
+		}		
 	}
 }
