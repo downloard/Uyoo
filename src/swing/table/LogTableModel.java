@@ -60,4 +60,9 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 	public void dataChanged() {
 		fireTableDataChanged();
 	}
+	
+	@Override
+	public String getColumnName(int column) {
+		return "" + column;
+	}
 }
