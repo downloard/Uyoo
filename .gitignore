@@ -2,3 +2,4 @@ antbuild/
 bin/
 deploy/
 logs/
+documentation/models/*.~ml
