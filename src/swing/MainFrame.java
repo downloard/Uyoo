@@ -257,12 +257,15 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 			m_controller.openFile();
 			
 		//Pattern
+		//TODO: is it dirty to check "comboBoxChangeEvent" via string? 
+		//      http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4808758
 		} else if (e.getSource() == m_cbPattern
 				   && e.getActionCommand().equals("comboBoxChanged")) {
 			setSelectedPattern();
 			
 		//Filter
 		//TODO: is it dirty to check "comboBoxChangeEvent" via string? 
+		//      http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4808758
 		} else if (e.getSource() == m_cbFilter 
 				   && e.getActionCommand().equals("comboBoxChanged")) {
 			setSelectedFilter();
