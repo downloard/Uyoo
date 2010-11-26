@@ -9,6 +9,8 @@ import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
 
+import core.UyooLogger;
+
 public class LogFile {
 
 	private File m_file;
@@ -26,7 +28,9 @@ public class LogFile {
 
 	public void readFile(File file) {
 		//init data
-		m_groupCount = 0;
+		if (false == file.equals(m_file)) {
+			m_groupCount = 0;
+		}
 		m_lines = new Vector<LogLine>();
 		
 		//now load
@@ -150,13 +154,15 @@ public class LogFile {
 		return m_file;
 	}
 	
-	private void fireDataChanged() {
+	private void fireDataChanged() {		
 		for (ILogFileListener next : m_listeners) {
 			next.dataChanged();
 		}
 	}
 
 	private void fireStructureChanged() {
+		UyooLogger.getLogger().debug("fireStructureChanged");
+		
 		for (ILogFileListener next : m_listeners) {
 			next.structureChanged();
 		}
