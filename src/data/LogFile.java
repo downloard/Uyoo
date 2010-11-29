@@ -20,9 +20,13 @@ public class LogFile {
 	
 	private Vector<ILogFileListener> m_listeners;
 
-	private int m_groupCount;
+	private int      m_groupCount;
+
+	private boolean  m_isCaseSensitive;
+	
 	
 	public LogFile() {
+		UyooLogger.getLogger().debug("ctor "  + this.getClass().getName());
 		m_listeners = new Vector<ILogFileListener>();
 	}
 
@@ -117,7 +121,13 @@ public class LogFile {
 			} else {
 				//if filter matches too -> add to viewport
 				String contenCell = groupedData.get(filter.getColumn());
-				if (contenCell.contains( filter.getText() )) {
+				boolean contains = false;
+				if (m_isCaseSensitive) {
+					contains = contenCell.contains( filter.getText() );
+				} else {
+					contains = contenCell.toUpperCase().contains( filter.getText().toUpperCase() );
+				}
+				if (contains) {
 					nextLine.setGroupedData(groupedData);
 					m_viewport.add(nextLine);
 				}
@@ -174,5 +184,13 @@ public class LogFile {
 	
 	public void removeListener(ILogFileListener listener) {
 		m_listeners.remove(listener);
+	}
+
+	public boolean isSearchCaseSensitive() {
+		return m_isCaseSensitive;
+	}
+
+	public void setSearchCaseSensitive(boolean sensetive) {
+		m_isCaseSensitive = sensetive;
 	}
 }

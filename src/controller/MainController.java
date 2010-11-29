@@ -31,11 +31,13 @@ public class MainController {
 
 	
 	public MainController(MainFrame gui) {
+		UyooLogger.getLogger().debug("ctor "  + this.getClass().getName());
+		
 		m_gui = gui;
 		
-		m_selectedFile = null;
-		m_autoReload   = false;
-		m_logFile      = new LogFile();
+		m_selectedFile          = null;
+		m_autoReload            = false;
+		m_logFile               = new LogFile();
 	}
 
 	public LogFile getLogFile() {
@@ -226,5 +228,13 @@ public class MainController {
 			//inform gui
 			m_gui.updateSettings();
 		}		
+	}
+
+	public boolean isSearchCaseSensitive() {
+		return m_logFile.isSearchCaseSensitive();
+	}
+
+	public void setSearchCaseSensitive(boolean sensetive) {
+		m_logFile.setSearchCaseSensitive(sensetive);
 	}
 }
