@@ -14,7 +14,7 @@ import data.LogFileFilter;
 
 public class LogFileTests {
 	
-	static private String TEST_FILE              = "unittests/resources/Unittest_LogFileTests.log";
+	static public  String TEST_FILE              = "unittests/resources/Unittest_LogFileTests.log";
 	static private String PATTERN                = "^(.*?)-(.*?)-(.*?)-(.*?)$";
 	static private String PATTERN_WITHOUT_TIME   = "^.*?-(.*?)-(.*?)-(.*?)$";
 	
