@@ -85,6 +85,8 @@ public class LogFile {
 			}
 			
 			//check filter column not to high
+			//TODO: is this the right point?
+			//      maybe new file is selected and patter/fiilter was also update
 			if (filter != null && filter.getColumn() >= m_groupCount) {
 				JOptionPane.showMessageDialog(null, "Illegal column in filter", "Error", JOptionPane.ERROR_MESSAGE);
 				throw new RuntimeException("Filter column is to high"); //TODO: exception handling

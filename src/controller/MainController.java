@@ -58,6 +58,9 @@ public class MainController {
 		return m_selectedFile;
 	}
 
+	/**
+	 * Open file and add file name it to persistence
+	 */
 	public void selectAndAddFile() {
 		File selectedFile = m_gui.selectFile();
 		if (selectedFile != null) {
@@ -100,6 +103,9 @@ public class MainController {
 		}
 	}
 	
+	/**
+	 * Open file and starts auto reload if necessary
+	 */
 	public void openFile() {
 		if (m_selectedFile == null) {
 			JOptionPane.showMessageDialog(m_gui, "No file selected");
