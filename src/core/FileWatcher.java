@@ -37,7 +37,7 @@ public abstract class FileWatcher implements Runnable {
 	
 	public synchronized void stop() {
 		m_run = false;
-		if (m_thread == null) {
+		if (m_thread != null) {
 			try {
 				m_thread.join();
 			} catch (InterruptedException e) {
