@@ -1,5 +1,7 @@
 package unittests.mocks;
 
+import java.io.File;
+
 import data.ILogFileListener;
 
 public class LogFileListenerMock implements ILogFileListener {
@@ -19,6 +21,11 @@ public class LogFileListenerMock implements ILogFileListener {
 	@Override
 	public void dataChanged() {
 		m_dataChangedCalled = true;
+	}
+	
+	@Override
+	public void fileChanged(File newFile) {
+		// TODO Auto-generated method stub		
 	}
 
 	public boolean wasStructureChangedCalled() {

@@ -30,7 +30,10 @@ public class LogFileTests {
 		assertFalse( callback.wasStructureChangedCalled() );
 		
 		lf.readFile(new File(TEST_FILE));
-		lf.updateViewport(PATTERN, null);
+
+		lf.setSelectedPattern(PATTERN);
+		
+		lf.updateViewport();
 		
 		assertEquals(6, lf.getLineCount());
 		assertEquals(5, lf.getGroupCount()); //includes line number 
@@ -71,7 +74,10 @@ public class LogFileTests {
 		LogFile lf = new LogFile();
 				
 		lf.readFile(new File(TEST_FILE));
-		lf.updateViewport(PATTERN, null);
+		
+		lf.setSelectedPattern(PATTERN);
+		
+		lf.updateViewport();
 		
 		//check default pattern
 		assertEquals(6, lf.getLineCount());
@@ -82,7 +88,9 @@ public class LogFileTests {
 		lf.addListener(callback);
 		
 		//change pattern without time
-		lf.updateViewport(PATTERN_WITHOUT_TIME, null);
+		lf.setSelectedPattern(PATTERN_WITHOUT_TIME);
+		
+		lf.updateViewport();
 		
 		//check new line/group count
 		assertEquals(6, lf.getLineCount());
@@ -102,7 +110,11 @@ public class LogFileTests {
 		LogFileFilter filter = new LogFileFilter("2:DEBUG");
 		
 		lf.readFile(new File(TEST_FILE));
-		lf.updateViewport(PATTERN, filter);
+		
+		lf.setSelectedPattern(PATTERN);
+		lf.setSelectedFilter(filter);
+		
+		lf.updateViewport();
 		
 		//check line count
 		assertEquals(3, lf.getLineCount());
@@ -123,7 +135,11 @@ public class LogFileTests {
 		LogFileFilter filter = new LogFileFilter("2:Debug");
 		
 		lf.readFile(new File(TEST_FILE));
-		lf.updateViewport(PATTERN, filter);
+		
+		lf.setSelectedPattern(PATTERN);
+		lf.setSelectedFilter(filter);
+		
+		lf.updateViewport();
 		
 		//check line count
 		assertEquals(1, lf.getLineCount());

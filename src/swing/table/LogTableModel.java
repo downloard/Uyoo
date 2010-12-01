@@ -1,4 +1,6 @@
 package swing.table;
+import java.io.File;
+
 import javax.swing.table.AbstractTableModel;
 
 import data.ILogFileListener;
@@ -59,6 +61,11 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 	@Override
 	public void dataChanged() {
 		fireTableDataChanged();
+	}
+	
+	@Override
+	public void fileChanged(File newFile) {
+		// TODO Auto-generated method stub
 	}
 	
 	@Override

@@ -31,14 +31,15 @@ import swing.SetupComboBox.SetupComboBoxModelPattern;
 import swing.components.StatusBarFrame;
 import swing.table.LogTable;
 import swing.table.LogTableModel;
-import controller.MainController;
+import data.ILogFileListener;
+import data.LogFile;
 import data.LogFileFilter;
 
 
 @SuppressWarnings("serial")
-public class MainFrame extends StatusBarFrame implements ActionListener {
+public class MainFrame extends StatusBarFrame implements ActionListener, ILogFileListener {
 	
-	private MainController m_controller;
+	private LogFile    m_logFile;
 	
 	private JComboBox  m_cbFile;
 	private JButton    m_btnOpen; 
@@ -67,7 +68,8 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 		super();
 		setTitle(null);
 		
-		m_controller = new MainController(this);
+		m_logFile = new LogFile();
+		m_logFile.addListener(this);
 		
 		setSize(800, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -77,7 +79,7 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 		arrangeComponents();
 		
 		//glue logic with gui
-		m_logTableModel.setLogFile( m_controller.getLogFile() );
+		m_logTableModel.setLogFile( m_logFile );
 		
 		initDone = true;
 	}
@@ -186,11 +188,11 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 		m_btnAddFilter.addActionListener(this);
 		
 		m_cbAutoReload = new JCheckBox("Autoreload");
-		m_cbAutoReload.setSelected(m_controller.isAutoReload());
+		m_cbAutoReload.setSelected(m_logFile.isAutoReload());
 		m_cbAutoReload.addActionListener(this);
 		
 		m_cbSearchCaseSensitive = new JCheckBox("Case sensitive");
-		m_cbSearchCaseSensitive.setSelected(m_controller.isSearchCaseSensitive());
+		m_cbSearchCaseSensitive.setSelected(m_logFile.isSearchCaseSensitive());
 		m_cbSearchCaseSensitive.addActionListener(this);
 		
 		m_cbPattern = new JComboBox(new SetupComboBoxModelPattern(settings.getPattern().getP()));
@@ -223,7 +225,7 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 	}
 	
 	public void updateSettings() {
-		String file = m_controller.getSelectedFile().getAbsolutePath();
+		String file = m_logFile.getFile().getAbsolutePath();
 		if (file != null) {
 			//set selected item of combo box
 			m_cbFile.setSelectedItem(file);
@@ -236,7 +238,7 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 	
 	private void setSelectedFile() {
 		assert(m_cbFile.getItemCount() > 0);
-		m_controller.setSelectedFile(m_cbFile.getSelectedItem().toString());
+		m_logFile.setFile(new File(m_cbFile.getSelectedItem().toString()));
 	}
 
 	@Override
@@ -247,24 +249,31 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 		
 		//Open
 		if (e.getSource() == m_btnOpen) {
-			m_controller.selectAndAddFile();
+			File selectedFile = selectFile();
+			if (selectedFile != null) {				
+				//saveSelectedFile
+				UyooSettings.getInstance().saveFile(m_logFile.getFile());
+				updateSettings();
+				
+				m_logFile.openFile(selectedFile);
+			}
 			
 		//(Re-)Load
 		} else if (e.getSource() == m_btnReload) {
-			m_controller.openFile();
+			m_logFile.openFile();
 			
 		//Autoreload
 		} else if (e.getSource() == m_cbAutoReload) {
-			m_controller.setAutoreload(m_cbAutoReload.isSelected());
+			m_logFile.setAutoreload(m_cbAutoReload.isSelected());
 			
 		//Autoreload
 		} else if (e.getSource() == m_cbSearchCaseSensitive) {
-			m_controller.setSearchCaseSensitive(m_cbSearchCaseSensitive.isSelected());
+			m_logFile.setSearchCaseSensitive(m_cbSearchCaseSensitive.isSelected());
 			
 		//File
 		} else if (e.getSource() == m_cbFile) {
 			setSelectedFile();
-			m_controller.openFile();
+			m_logFile.openFile();
 			
 		//Pattern
 		//TODO: is it dirty to check "comboBoxChangeEvent" via string? 
@@ -282,11 +291,16 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 		
 		//Add Pattern
 		} else if (e.getSource() == m_btnAddPattern) {
-			m_controller.saveCurrentPattern();
+			UyooSettings.getInstance().savePattern( m_logFile.getSelectedPattern() );
+			updateSettings();
 		
 		//Add Filter
 		} else if (e.getSource() == m_btnAddFilter) {
-			m_controller.saveCurrentFilter();
+			LogFileFilter filter =  m_logFile.getSelectedFilter();
+			if (filter != null) {
+				UyooSettings.getInstance().saveFilter(filter);
+				updateSettings();
+			}
 		}
 	}
 
@@ -303,17 +317,17 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 					                      "Error",
 					                      JOptionPane.ERROR_MESSAGE);
 		}
-		m_controller.setSelectedFilter(tf);
+		m_logFile.setSelectedFilter(tf);
 	}
 
 	private void setSelectedPattern() {
-		m_controller.setSelectedPattern( m_cbPattern.getEditor().getItem() );
+		m_logFile.setSelectedPattern( m_cbPattern.getEditor().getItem() );
 	}
 	
 	public File selectFile() {	
 		JFileChooser fc = new JFileChooser();
-		if (m_controller.getSelectedFile() != null) {
-			fc.setSelectedFile(m_controller.getSelectedFile().getAbsoluteFile());
+		if (m_logFile.getFile() != null) {
+			fc.setSelectedFile(m_logFile.getFile().getAbsoluteFile());
 		}
 		int state = fc.showOpenDialog(this);
 		if ( state == JFileChooser.APPROVE_OPTION ) {
@@ -323,7 +337,9 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 	    }
 	}
 	
-	public void updateFileInformation(File file) {
+	private void updateFileInformation() {
+		File file = m_logFile.getFile();
+		
 		//JFrame title
 		{
 			setTitle(file.getAbsolutePath());
@@ -362,5 +378,20 @@ public class MainFrame extends StatusBarFrame implements ActionListener {
 			setMidlleText("Last Modified: " + formatter.format(date) );
 			
 		}
+	}
+	
+	@Override
+	public void dataChanged() {
+		updateFileInformation();
+	}
+	
+	@Override
+	public void structureChanged() {
+		updateFileInformation();		
+	}
+	
+	@Override
+	public void fileChanged(File newFile) {
+		updateFileInformation();
 	}
 }

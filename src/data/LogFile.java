@@ -9,9 +9,12 @@ import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
 
+import core.FileWatcher;
 import core.UyooLogger;
 
 public class LogFile {
+	
+	private FileWatcher    m_watcher;
 
 	private File m_file;
 	
@@ -23,6 +26,11 @@ public class LogFile {
 	private int      m_groupCount;
 
 	private boolean  m_isCaseSensitive;
+
+	private boolean m_autoReload;
+	
+	private String         m_currentPattern;
+	private LogFileFilter  m_currentFilter;
 	
 	
 	public LogFile() {
@@ -63,7 +71,7 @@ public class LogFile {
 		}
 	}
 	
-	public void updateViewport(String pattern, LogFileFilter filter) {
+	public void updateViewport() {
 		int oldGroupCount = getGroupCount();
 		
 		//reset
@@ -71,7 +79,7 @@ public class LogFile {
 		m_viewport = new Vector<LogLine>();
 		
 		//check pattern
-		Pattern p = Pattern.compile(pattern);
+		Pattern p = Pattern.compile(m_currentPattern);
 		Matcher m = null;
 		
 		//first set group count as column count
@@ -87,7 +95,7 @@ public class LogFile {
 			//check filter column not to high
 			//TODO: is this the right point?
 			//      maybe new file is selected and patter/fiilter was also update
-			if (filter != null && filter.getColumn() >= m_groupCount) {
+			if (m_currentFilter != null && m_currentFilter.getColumn() >= m_groupCount) {
 				JOptionPane.showMessageDialog(null, "Illegal column in filter", "Error", JOptionPane.ERROR_MESSAGE);
 				throw new RuntimeException("Filter column is to high"); //TODO: exception handling
 			}
@@ -114,7 +122,7 @@ public class LogFile {
 				}
 			}
 			
-			if (filter == null) {
+			if (m_currentFilter == null) {
 				//add line to viewport
 				nextLine.setGroupedData(groupedData);
 				m_viewport.add(nextLine);
@@ -122,12 +130,12 @@ public class LogFile {
 				//nop
 			} else {
 				//if filter matches too -> add to viewport
-				String contenCell = groupedData.get(filter.getColumn());
+				String contenCell = groupedData.get(m_currentFilter.getColumn());
 				boolean contains = false;
 				if (m_isCaseSensitive) {
-					contains = contenCell.contains( filter.getText() );
+					contains = contenCell.contains( m_currentFilter.getText() );
 				} else {
-					contains = contenCell.toUpperCase().contains( filter.getText().toUpperCase() );
+					contains = contenCell.toUpperCase().contains( m_currentFilter.getText().toUpperCase() );
 				}
 				if (contains) {
 					nextLine.setGroupedData(groupedData);
@@ -171,6 +179,12 @@ public class LogFile {
 			next.dataChanged();
 		}
 	}
+	
+	private void fireFileChanged() {		
+		for (ILogFileListener next : m_listeners) {
+			next.fileChanged(m_file);
+		}
+	}
 
 	private void fireStructureChanged() {
 		UyooLogger.getLogger().debug("fireStructureChanged");
@@ -194,5 +208,92 @@ public class LogFile {
 
 	public void setSearchCaseSensitive(boolean sensetive) {
 		m_isCaseSensitive = sensetive;
+	}
+
+	public void startAutoReload() {
+		stopAutoReload();
+		
+		if (m_file == null) {
+			return;
+		}
+		
+		UyooLogger.getLogger().debug("starting auto reload");
+		m_watcher = new FileWatcher(m_file) {
+			@Override
+			protected void onChange(File file) {
+				reloadFile();
+				updateViewport();
+				
+				fireFileChanged();
+			}
+		};
+		m_watcher.start();
+	}
+
+	public void stopAutoReload() {
+		if (m_watcher != null) {
+			UyooLogger.getLogger().debug("stopping auto reload");
+			m_watcher.stop();
+		}		
+	}
+
+	public void setAutoreload(boolean autoreload) {
+		UyooLogger.getLogger().debug("Set autoreload to " + autoreload);
+		m_autoReload = autoreload;
+		
+		//TODO: maybe refactor - do not start every time if already running
+		if (autoreload) {
+			startAutoReload();
+		} else {
+			stopAutoReload();
+		}		
+	}
+	
+	public void openFile() {
+		openFile(m_file);
+	}
+
+	public void openFile(File file) {
+		UyooLogger.getLogger().info("Open file \"" + file + "\"");
+		
+		m_file = file;
+		
+		stopAutoReload();	
+		
+		readFile(file);
+		updateViewport();
+		
+		fireFileChanged();
+		
+		if (m_autoReload) {
+			startAutoReload();
+		}
+		
+	}
+
+	public void setFile(File filename) {
+		m_file = filename;		
+	}
+	
+	public void setSelectedPattern(Object pattern) {
+		UyooLogger.getLogger().debug("Set pattern to " + pattern);
+		m_currentPattern = pattern.toString();		
+	}
+
+	public void setSelectedFilter(LogFileFilter tf) {
+		UyooLogger.getLogger().debug("Set filter to " + tf);
+		m_currentFilter = tf;	
+	}
+	
+	public String getSelectedPattern() {
+		return m_currentPattern;	
+	}
+
+	public LogFileFilter getSelectedFilter() {
+		return m_currentFilter;	
+	}
+
+	public boolean isAutoReload() {
+		return m_autoReload;
 	}
 }

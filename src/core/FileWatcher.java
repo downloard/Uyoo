@@ -56,6 +56,8 @@ public abstract class FileWatcher implements Runnable {
 			long size = m_file.length();
 			
 			if ((m_timeStamp != timeStamp) | (size != m_size)) {
+				UyooLogger.getLogger().debug("File '" + m_file.getName() + "' changed");
+				
 				m_timeStamp = timeStamp;
 				m_size = size;
 				
