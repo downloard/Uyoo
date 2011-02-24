@@ -3,110 +3,168 @@ package data;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JOptionPane;
-
-import core.FileWatcher;
+import core.ExceptionHandler;
 import core.UyooLogger;
 
-public class LogFile {
-	
-	private FileWatcher    m_watcher;
+public class LogFile implements Runnable {
 
-	private File m_file;
-	
-	private Vector<LogLine> m_lines;
-	private Vector<LogLine> m_viewport;
+	private File                     m_file;
 	
 	private Vector<ILogFileListener> m_listeners;
-
-	private int      m_groupCount;
-
-	private boolean  m_isCaseSensitive;
-
-	private boolean m_autoReload;
+	private LogViewport              m_viewport;
 	
-	private String         m_currentPattern;
-	private LogFileFilter  m_currentFilter;
+	String 					m_usedPattern;
+	private String          m_configuredPattern;
+	private LogFileFilter   m_currentFilter;
+	private boolean         m_isCaseSensitive;	
+	private int             m_groupCount;
+	
+	private Vector<LogLine> m_lines;
+	int                     m_readedLines;
+	
+	
+	private Thread          m_fileWatcherThread;
+	private boolean         m_runWorkerThread;
 	
 	
 	public LogFile() {
 		UyooLogger.getLogger().debug("ctor "  + this.getClass().getName());
 		m_listeners = new Vector<ILogFileListener>();
+		
+		m_lines    = new Vector<LogLine>();
+		m_viewport = new LogViewport();
 	}
 
-	public void readFile(File file) {
-		//init data
-		if (false == file.equals(m_file)) {
-			m_groupCount = 0;
-		}
-		m_lines = new Vector<LogLine>();
-		
-		//now load
-		m_file = file;
-		reloadFile();
+	public void finalize() throws Throwable {
+		closeFile();
 	}
 	
-	public void reloadFile() {
-		m_lines.clear();
+	public void openFile(File file) {
 		
-		try {			
-			BufferedReader br = new BufferedReader(new FileReader(m_file));
+		//do some initialization if new file is not the old file
+		if (file != null && (file.equals(m_file) == false)) {
 			
-			//now add the rows
-			String nextLine = null;
-			for (int lineNr=1; (nextLine = br.readLine()) != null; lineNr++) {
-				LogLine next = new LogLine(nextLine, lineNr);
-				m_lines.add(next);
-			}				
+			UyooLogger.getLogger().info("Open new file \"" + file.getName() + "\"");
+
+			m_file = file;
+						
+			//m_fileLastModified = m_file.lastModified();
+			m_groupCount = 1;
+			m_usedPattern = null;
+			m_lines.clear();
+			
+			//stop old thread if necessary
+			closeFile();
+			
+			//clear data
+			clearViewport();	
+			
+			//start new thread
+			m_runWorkerThread = true;
+			m_fileWatcherThread = new Thread(this, "FileWatcherThread");
+			m_fileWatcherThread.start();
+			
+			fireFileChanged();
+		}		
+	}
+	
+	private synchronized void closeFile() {
+		m_runWorkerThread = false;
+		if (m_fileWatcherThread != null) {
+			try {
+				m_fileWatcherThread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} finally {
+				m_fileWatcherThread = null;
+			}
+		}
+	}
+	
+	@Override
+	public void run() {
+		UyooLogger.getLogger().debug("File Watcher started");
+		
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(m_file));
+		
+			while (m_runWorkerThread) {
+				if (br.ready()) {			 				
+				
+					//now add the rows
+					String nextLine = null;
+					for (int lineNr=1; ((nextLine = br.readLine()) != null) && m_runWorkerThread; lineNr++) {
+						LogLine next = new LogLine(nextLine, lineNr);
+						m_lines.add(next);
+					}			
+					
+					if (m_runWorkerThread) {
+						updateViewport();
+					}
+					
+				} else {
+					Thread.sleep(1000);
+				}				
+			}
 			
 			br.close();
-		} catch (Exception e) {
-			//TODO: handle exception
+			
+		} catch (IOException e) {			
+			//TODO: maybe reload file
+			//      doReset()
+			
 			e.printStackTrace();
-			return;
+			
+		}  catch (InterruptedException e) {
+			//Thread Sleep failed
+			ExceptionHandler.handleException(e);
+		} finally {
+			UyooLogger.getLogger().debug("File Watcher finished");
 		}
 	}
 	
 	public void updateViewport() {
-		int oldGroupCount = getGroupCount();
+		int oldGroupCount = m_groupCount;
 		
-		//reset
-		m_groupCount = 1;
-		m_viewport = new Vector<LogLine>();
+		//update pattern first time
+		if (m_usedPattern == null) {
+			m_usedPattern = m_configuredPattern;
+			
+		//use new pattern
+		} else if (m_usedPattern.equals(m_configuredPattern) == false) {
+			m_usedPattern = m_configuredPattern;
+			
+			clearViewport();
+		}
+		//TODO: may be no pattern possible
 		
-		//check pattern
-		Pattern p = Pattern.compile(m_currentPattern);
+		Pattern p = Pattern.compile(m_usedPattern);
 		Matcher m = null;
 		
-		//first set group count as column count
-		//TODO: annahme dass erst zeile dem pattern matched
-		if (m_lines.size() > 0) {
+		//calculate new group count - using first line
+		//TODO: on pattern change viewport and group count has to be update
+		if (m_readedLines == 0) {
 			LogLine firstLine = m_lines.get(0);
 			m = p.matcher(firstLine.getText());
 			if (m.matches()) {
+				//try to use an other line if not work
 				m_groupCount = m.groupCount();
 				m_groupCount++; //first column is line counter
-			}
-			
-			//check filter column not to high
-			//TODO: is this the right point?
-			//      maybe new file is selected and patter/fiilter was also update
-			if (m_currentFilter != null && m_currentFilter.getColumn() >= m_groupCount) {
-				JOptionPane.showMessageDialog(null, "Illegal column in filter", "Error", JOptionPane.ERROR_MESSAGE);
-				throw new RuntimeException("Filter column is to high"); //TODO: exception handling
+			} else {
+				UyooLogger.getLogger().error("Initial pattern missmatch");
 			}
 		}
-		
-		//now add matching lines
-		for (int lineNr=0; lineNr < m_lines.size(); lineNr++) {
-			LogLine nextLine = m_lines.get(lineNr);
+				
+		for (; m_readedLines < m_lines.size(); m_readedLines++) {
+			LogLine nextLine = m_lines.get(m_readedLines);
 			Vector<String> groupedData = new Vector<String>(m_groupCount);
 			
-			groupedData.add("" + (lineNr+1));
+			groupedData.add("" + (m_readedLines+1));
 			m = p.matcher(nextLine.getText());
 			if (m.matches()) {
 				//row matches pattern, each group is a column
@@ -142,18 +200,20 @@ public class LogFile {
 					m_viewport.add(nextLine);
 				}
 			}
-		}			
+		}
 		
-		//inform listeners
-		{
-			if (oldGroupCount != getGroupCount()) {	
-				fireStructureChanged();
-			} else {
-				fireDataChanged();
-			}
+		if (oldGroupCount != getGroupCount()) {	
+			fireStructureChanged();
+		} else {
+			fireDataChanged();
 		}
 	}
 
+	private void clearViewport() {
+		m_readedLines = 0;
+		m_viewport.clear();
+	}
+	
 	public int getGroupCount() {
 		return m_groupCount;
 	}
@@ -174,13 +234,16 @@ public class LogFile {
 		return m_file;
 	}
 	
-	private void fireDataChanged() {		
+	private void fireDataChanged() {	
+		//UyooLogger.getLogger().debug("fire Data changed");
 		for (ILogFileListener next : m_listeners) {
 			next.dataChanged();
 		}
 	}
 	
 	private void fireFileChanged() {		
+		UyooLogger.getLogger().debug("fireFileChanged");
+		
 		for (ILogFileListener next : m_listeners) {
 			next.fileChanged(m_file);
 		}
@@ -209,75 +272,10 @@ public class LogFile {
 	public void setSearchCaseSensitive(boolean sensetive) {
 		m_isCaseSensitive = sensetive;
 	}
-
-	public void startAutoReload() {
-		stopAutoReload();
-		
-		if (m_file == null) {
-			return;
-		}
-		
-		UyooLogger.getLogger().debug("starting auto reload");
-		m_watcher = new FileWatcher(m_file) {
-			@Override
-			protected void onChange(File file) {
-				reloadFile();
-				updateViewport();
-				
-				fireFileChanged();
-			}
-		};
-		m_watcher.start();
-	}
-
-	public void stopAutoReload() {
-		if (m_watcher != null) {
-			UyooLogger.getLogger().debug("stopping auto reload");
-			m_watcher.stop();
-		}		
-	}
-
-	public void setAutoreload(boolean autoreload) {
-		UyooLogger.getLogger().debug("Set autoreload to " + autoreload);
-		m_autoReload = autoreload;
-		
-		//TODO: maybe refactor - do not start every time if already running
-		if (autoreload) {
-			startAutoReload();
-		} else {
-			stopAutoReload();
-		}		
-	}
-	
-	public void openFile() {
-		openFile(m_file);
-	}
-
-	public void openFile(File file) {
-		UyooLogger.getLogger().info("Open file \"" + file + "\"");
-		
-		m_file = file;
-		
-		stopAutoReload();	
-		
-		readFile(file);
-		updateViewport();
-		
-		fireFileChanged();
-		
-		if (m_autoReload) {
-			startAutoReload();
-		}
-		
-	}
-
-	public void setFile(File filename) {
-		m_file = filename;		
-	}
 	
 	public void setSelectedPattern(Object pattern) {
 		UyooLogger.getLogger().debug("Set pattern to " + pattern);
-		m_currentPattern = pattern.toString();		
+		m_configuredPattern = pattern.toString();		
 	}
 
 	public void setSelectedFilter(LogFileFilter tf) {
@@ -286,14 +284,10 @@ public class LogFile {
 	}
 	
 	public String getSelectedPattern() {
-		return m_currentPattern;	
+		return m_configuredPattern;	
 	}
 
 	public LogFileFilter getSelectedFilter() {
 		return m_currentFilter;	
-	}
-
-	public boolean isAutoReload() {
-		return m_autoReload;
 	}
 }
