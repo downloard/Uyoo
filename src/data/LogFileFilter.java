@@ -22,4 +22,22 @@ public class LogFileFilter {
 	public String toString() {
 		return "" + m_column + ":" + m_text;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof LogFileFilter == false) {
+			return false;
+		}
+		
+		LogFileFilter other = (LogFileFilter) obj;
+		if (other.m_column != this.m_column) {
+			return false;
+		}
+		
+		if (other.m_text.equals(this.m_column) == false) {
+			return false;
+		}
+
+		return true;
+	}
 }

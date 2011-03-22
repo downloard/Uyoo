@@ -4,7 +4,6 @@ import java.util.Vector;
 
 import javax.swing.table.AbstractTableModel;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import core.UyooLogger;
 import data.ILogFileListener;
 import data.LogFile;
@@ -103,9 +102,7 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 				return line.getText();
 			default:
 				return "<Error>";
-					
 		}
-		
 	}
 	
 	@Override
@@ -153,12 +150,17 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 		return m_configuredPattern;	
 	}
 	
-	public void setSelectedFilter(LogFileFilter tf) {
-		m_filter = tf;
+	public void setSelectedFilter(LogFileFilter tf) {		
+		if ((tf == null) || (tf.equals(m_filter) == false)) {
+			UyooLogger.getLogger().debug("Set filter to " + tf);
+			
+			m_filter = tf;
+			
+			fireTableDataChanged();
+		}
 	}
 
 	public LogFileFilter getSelectedFilter() {
-		//TODO: umbau
-		throw new NotImplementedException();	
+		return m_filter;	
 	}
 }
