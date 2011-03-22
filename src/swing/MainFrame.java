@@ -71,6 +71,8 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 		m_logFile = new LogFile();
 		m_logFile.addListener(this);
 		
+		m_logTableModel = new LogTableModel(); 
+		
 		setSize(800, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
@@ -160,7 +162,6 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 
 		//Center
 		{
-		    m_logTableModel = new LogTableModel(); 
 			m_tblLogs = new LogTable(m_logTableModel);
 			JScrollPane sp = new JScrollPane(m_tblLogs, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 			mainPanel.add(sp, BorderLayout.CENTER);
@@ -192,7 +193,7 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 //		m_cbAutoReload.addActionListener(this);
 		
 		m_cbSearchCaseSensitive = new JCheckBox("Case sensitive");
-		m_cbSearchCaseSensitive.setSelected(m_logFile.isSearchCaseSensitive());
+		m_cbSearchCaseSensitive.setSelected(m_logTableModel.isSearchCaseSensitive());
 		m_cbSearchCaseSensitive.addActionListener(this);
 		
 		m_cbPattern = new JComboBox(new SetupComboBoxModelPattern(settings.getPattern().getP()));
@@ -265,9 +266,9 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 //		} else if (e.getSource() == m_cbAutoReload) {
 //			m_logFile.setAutoreload(m_cbAutoReload.isSelected());
 //			
-//		//Autoreload
-//		} else if (e.getSource() == m_cbSearchCaseSensitive) {
-//			m_logFile.setSearchCaseSensitive(m_cbSearchCaseSensitive.isSelected());
+		//Autoreload
+		} else if (e.getSource() == m_cbSearchCaseSensitive) {
+			m_logTableModel.setSearchCaseSensitive(m_cbSearchCaseSensitive.isSelected());
 			
 		//File
 		} else if (e.getSource() == m_cbFile) {
@@ -289,12 +290,12 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 		
 		//Add Pattern
 		} else if (e.getSource() == m_btnAddPattern) {
-			UyooSettings.getInstance().savePattern( m_logFile.getSelectedPattern() );
+			UyooSettings.getInstance().savePattern( m_logTableModel.getSelectedPattern() );
 			updateSettings();
 		
 		//Add Filter
 		} else if (e.getSource() == m_btnAddFilter) {
-			LogFileFilter filter =  m_logFile.getSelectedFilter();
+			LogFileFilter filter =  m_logTableModel.getSelectedFilter();
 			if (filter != null) {
 				UyooSettings.getInstance().saveFilter(filter);
 				updateSettings();
@@ -315,11 +316,11 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 					                      "Error",
 					                      JOptionPane.ERROR_MESSAGE);
 		}
-		m_logFile.setSelectedFilter(tf);
+		m_logTableModel.setSelectedFilter(tf);
 	}
 
 	private void setSelectedPattern() {
-		m_logFile.setSelectedPattern( m_cbPattern.getEditor().getItem() );
+		m_logTableModel.setSelectedPattern( m_cbPattern.getEditor().getItem().toString() );
 	}
 	
 	public File selectFile() {	

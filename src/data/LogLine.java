@@ -1,36 +1,20 @@
 package data;
 
-import java.util.Vector;
-
 public class LogLine {
 	private int            m_lineNumber;
-	private String 		   m_orgLineString;
-	private Vector<String> m_groupedData;
+	private String 		   m_text;
 	
 	
 	public LogLine(String line, int lineNumber) {
 		m_lineNumber    = lineNumber;
-		m_orgLineString = line; 
+		m_text = line; 
 	}
 
 	public String getText() {
-		return m_orgLineString;
-	}
-	
-	public Vector<String> getGroupedData() {
-		return m_groupedData;
-	}
-
-
-	public void setGroupedData(Vector<String> data) {
-		m_groupedData = data;
+		return m_text;
 	}
 
 	public int getLineNumber() {
 		return m_lineNumber;
-	}
-	
-	public String getGroupText(int groupIndex) {
-		return m_groupedData.get(groupIndex);
 	}
 }
