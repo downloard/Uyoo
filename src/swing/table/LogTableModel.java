@@ -21,12 +21,12 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 	private boolean          m_isSearchCaseSensitive;
 	private LogFileFilter    m_filter;
 	
-	private Vector<Integer>  m_visibleRows;
+	private Vector<LogLine>  m_visibleRows;
 	
 	
 	
 	public LogTableModel() {
-		m_visibleRows = new Vector<Integer>();
+		m_visibleRows = new Vector<LogLine>();
 	}
 	
 	public LogTableModel(LogFile logFile) {
@@ -51,14 +51,13 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 		//iterate over all lines
 		int lines = m_logFile.getLineCount();
 		for (int i=0; i < lines; i++) {
+			LogLine l = m_logFile.getData(i);
 			boolean contains = false;
 			
 			//check 
 			if (m_filter == null) {
 				contains = true;
 			} else {
-				LogLine l = m_logFile.getData(i);
-				
 				if (m_isSearchCaseSensitive) {
 					contains = l.getText().contains( m_filter.getText() );
 				} else {
@@ -67,7 +66,7 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 			}
 			
 			if (contains == true) {
-				m_visibleRows.add(i);
+				m_visibleRows.add(l);
 			}
 		}
 	}
@@ -94,7 +93,7 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		LogLine line = m_logFile.getData( m_visibleRows.get(rowIndex) );
+		LogLine line = m_visibleRows.get(rowIndex);
 	
 		switch (columnIndex)
 		{
