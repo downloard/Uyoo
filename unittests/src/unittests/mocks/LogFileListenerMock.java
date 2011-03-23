@@ -14,12 +14,7 @@ public class LogFileListenerMock implements ILogFileListener {
 	}
 
 	@Override
-	public void structureChanged() {
-		m_structureChangedCalled = true;
-	}
-
-	@Override
-	public void dataChanged() {
+	public void dataAdded() {
 		m_dataChangedCalled = true;
 	}
 	

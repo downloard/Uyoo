@@ -29,8 +29,8 @@ public class LogFile implements Runnable {
 	
 	public LogFile() {
 		UyooLogger.getLogger().debug("ctor "  + this.getClass().getName());
-		m_listeners = new Vector<ILogFileListener>();
 		
+		m_listeners = new Vector<ILogFileListener>();
 		m_lines    = new Vector<LogLine>();
 	}
 
@@ -103,7 +103,7 @@ public class LogFile implements Runnable {
 					
 				} else {
 					Thread.sleep(1000);
-					UyooLogger.getLogger().debug(".");
+					//UyooLogger.getLogger().info(".");
 				}				
 			}
 			
@@ -146,7 +146,7 @@ public class LogFile implements Runnable {
 	private void fireDataChanged() {	
 		//UyooLogger.getLogger().debug("fire Data changed");
 		for (ILogFileListener next : m_listeners) {
-			next.dataChanged();
+			next.dataAdded();
 		}
 	}
 	
@@ -155,14 +155,6 @@ public class LogFile implements Runnable {
 		
 		for (ILogFileListener next : m_listeners) {
 			next.fileChanged(m_file);
-		}
-	}
-
-	private void fireStructureChanged() {
-		UyooLogger.getLogger().debug("fireStructureChanged");
-		
-		for (ILogFileListener next : m_listeners) {
-			next.structureChanged();
 		}
 	}
 	

@@ -1,6 +1,5 @@
 package swing.table;
 import java.io.File;
-import java.util.Vector;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -9,6 +8,7 @@ import data.ILogFileListener;
 import data.LogFile;
 import data.LogFileFilter;
 import data.LogLine;
+import data.LogViewport;
 
 
 @SuppressWarnings("serial")
@@ -20,12 +20,14 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 	private boolean          m_isSearchCaseSensitive;
 	private LogFileFilter    m_filter;
 	
-	private Vector<LogLine>  m_visibleRows;
+	private LogViewport      m_visibleRows;
+	private int     	     m_readedLines;
 	
 	
 	
 	public LogTableModel() {
-		m_visibleRows = new Vector<LogLine>();
+		m_visibleRows = new LogViewport();
+		m_readedLines = 0;
 	}
 	
 	public LogTableModel(LogFile logFile) {
@@ -43,14 +45,15 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 		logFile.addListener(this);
 	}
 	
-	private void updateData() {
-		//clear table data
-		m_visibleRows.clear();
+	private void updateData() {	
+		if (m_logFile == null) {
+			return;
+		}
 		
 		//iterate over all lines
 		int lines = m_logFile.getLineCount();
-		for (int i=0; i < lines; i++) {
-			LogLine l = m_logFile.getData(i);
+		for (; m_readedLines < lines; m_readedLines++) {
+			LogLine l = m_logFile.getData(m_readedLines);
 			boolean contains = false;
 			
 			//check 
@@ -68,6 +71,11 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 				m_visibleRows.add(l);
 			}
 		}
+	}
+	
+	private void clearData() {
+		m_visibleRows.clear();
+		m_readedLines = 0;
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -111,21 +119,29 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////
-
-	@Override
+	
 	public void structureChanged() {
+		clearData();
 		updateData();
 		fireTableStructureChanged();
 	}
-
-	@Override
+	
 	public void dataChanged() {
+		clearData();
 		updateData();
 		fireTableDataChanged();
+	}
+
+	@Override
+	public void dataAdded() {
+		int alreadyReaded = m_visibleRows.size();
+		updateData();
+		fireTableRowsInserted(alreadyReaded, m_visibleRows.size()-1);
 	}
 	
 	@Override
 	public void fileChanged(File newFile) {
+		clearData();
 		updateData();
 		fireTableStructureChanged();
 	}
@@ -138,7 +154,11 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 
 	public void setSearchCaseSensitive(boolean sensetive) {
 		UyooLogger.getLogger().debug("Search is case sensitive: " + sensetive);
-		m_isSearchCaseSensitive = sensetive;
+		if (m_isSearchCaseSensitive != sensetive) {
+			m_isSearchCaseSensitive = sensetive;
+			
+			dataChanged();
+		}
 	}
 	
 	public void setSelectedPattern(String pattern) {
@@ -156,7 +176,7 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 			
 			m_filter = tf;
 			
-			fireTableDataChanged();
+			dataChanged();
 		}
 	}
 

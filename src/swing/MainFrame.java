@@ -156,7 +156,6 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 				m_lblEmpty.setPreferredSize(new Dimension(maxWidth, m_lblEmpty.getPreferredSize().height));
 			}
 			
-			
 			mainPanel.add(pnlNorth, BorderLayout.NORTH);
 		}
 
@@ -187,10 +186,6 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 		
 		m_btnAddFilter = new JButton("Add");
 		m_btnAddFilter.addActionListener(this);
-		
-//		m_cbAutoReload = new JCheckBox("Autoreload");
-//		m_cbAutoReload.setSelected(m_logFile.isAutoReload());
-//		m_cbAutoReload.addActionListener(this);
 		
 		m_cbSearchCaseSensitive = new JCheckBox("Case sensitive");
 		m_cbSearchCaseSensitive.setSelected(m_logTableModel.isSearchCaseSensitive());
@@ -247,7 +242,7 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 			return;
 		}
 		
-		//Open
+		// Open
 		if (e.getSource() == m_btnOpen) {
 			File selectedFile = selectFile();
 			if (selectedFile != null) {				
@@ -258,42 +253,38 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 				m_logFile.openFile(selectedFile);
 			}
 			
-		//(Re-)Load
+		// (Re-)Load
 		} else if (e.getSource() == m_btnReload) {
 			m_logFile.openFile( getSelectedFile() );
-			
-//		//Autoreload
-//		} else if (e.getSource() == m_cbAutoReload) {
-//			m_logFile.setAutoreload(m_cbAutoReload.isSelected());
-//			
-		//Autoreload
+	
+		// Case sensitive
 		} else if (e.getSource() == m_cbSearchCaseSensitive) {
 			m_logTableModel.setSearchCaseSensitive(m_cbSearchCaseSensitive.isSelected());
 			
-		//File
+		// File
 		} else if (e.getSource() == m_cbFile) {
 			m_logFile.openFile( getSelectedFile() );
 			
-		//Pattern
+		// Pattern
 		//TODO: is it dirty to check "comboBoxChangeEvent" via string? 
 		//      http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4808758
 		} else if (e.getSource() == m_cbPattern
 				   && e.getActionCommand().equals("comboBoxChanged")) {
 			setSelectedPattern();
 			
-		//Filter
+		// Filter
 		//TODO: is it dirty to check "comboBoxChangeEvent" via string? 
 		//      http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4808758
 		} else if (e.getSource() == m_cbFilter 
 				   && e.getActionCommand().equals("comboBoxChanged")) {
 			setSelectedFilter();
 		
-		//Add Pattern
+		// Add Pattern
 		} else if (e.getSource() == m_btnAddPattern) {
 			UyooSettings.getInstance().savePattern( m_logTableModel.getSelectedPattern() );
 			updateSettings();
 		
-		//Add Filter
+		// Add Filter
 		} else if (e.getSource() == m_btnAddFilter) {
 			LogFileFilter filter =  m_logTableModel.getSelectedFilter();
 			if (filter != null) {
@@ -380,13 +371,8 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 	}
 	
 	@Override
-	public void dataChanged() {
+	public void dataAdded() {
 		updateFileInformation();
-	}
-	
-	@Override
-	public void structureChanged() {
-		updateFileInformation();		
 	}
 	
 	@Override
