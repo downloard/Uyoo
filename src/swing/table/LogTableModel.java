@@ -1,5 +1,7 @@
 package swing.table;
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -14,9 +16,14 @@ import data.LogViewport;
 @SuppressWarnings("serial")
 public class LogTableModel extends AbstractTableModel implements ILogFileListener {
 	
+	private static int DEFAULT_GROUP_COUNT = 2;
+	
 	private LogFile          m_logFile;
 	
 	private String           m_configuredPattern;
+	private Matcher			 m_patternMatcher;
+	private int 			 m_currentGroupCount;
+	
 	private boolean          m_isSearchCaseSensitive;
 	private LogFileFilter    m_filter;
 	
@@ -28,6 +35,8 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 	public LogTableModel() {
 		m_visibleRows = new LogViewport();
 		m_readedLines = 0;
+		m_currentGroupCount = DEFAULT_GROUP_COUNT;
+		m_patternMatcher = null;
 	}
 	
 	public LogTableModel(LogFile logFile) {
@@ -85,7 +94,7 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 		if (m_logFile == null) {
 			return 0;
 		} else {
-			return m_logFile.getGroupCount();	
+			return m_currentGroupCount;	
 		}
 	}
 
@@ -141,9 +150,8 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 	
 	@Override
 	public void fileChanged(File newFile) {
-		clearData();
-		updateData();
-		fireTableStructureChanged();
+		calculateGroupCountByPattern();
+		structureChanged();
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -162,8 +170,54 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 	}
 	
 	public void setSelectedPattern(String pattern) {
-		UyooLogger.getLogger().debug("Set pattern to " + pattern);
-		m_configuredPattern = pattern;		
+		if ((pattern == null) || (pattern.equals(m_configuredPattern) == false)) {
+			UyooLogger.getLogger().debug("Set pattern to " + pattern);
+			
+			int oldGroupCount = m_currentGroupCount;
+			m_configuredPattern = pattern;
+			
+			//calculate new group count
+			calculateGroupCountByPattern();
+			
+			if (oldGroupCount == m_currentGroupCount) {
+				dataChanged();
+			} else {
+				structureChanged();
+			}
+		}
+	}
+
+	private void calculateGroupCountByPattern() {
+		boolean bFound = false;
+		
+		if (m_logFile != null) {
+			Pattern p        = Pattern.compile(m_configuredPattern);
+			m_patternMatcher = null;
+			
+			//test max. first 10 lines
+			//TODO: make it configurable
+			int maxLinesToTest = 5;
+			if (maxLinesToTest > m_logFile.getLineCount()) {
+				maxLinesToTest = m_logFile.getLineCount();
+			}
+			
+			for (int i=0; i < maxLinesToTest; i++) {
+				LogLine firstLine = m_logFile.getData(i);
+				m_patternMatcher = p.matcher(firstLine.getText());
+				if (m_patternMatcher.matches()) {
+					m_currentGroupCount = m_patternMatcher.groupCount();
+					m_currentGroupCount++; //first column is line counter
+					bFound = true;
+					break;
+				}
+			}
+		}
+		
+		if (bFound == false) {
+			UyooLogger.getLogger().error("Initial pattern missmatch");
+			m_patternMatcher = null;
+			m_currentGroupCount = DEFAULT_GROUP_COUNT;
+		}
 	}
 	
 	public String getSelectedPattern() {

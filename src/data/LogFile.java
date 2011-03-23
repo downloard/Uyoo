@@ -6,7 +6,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import core.ExceptionHandler;
 import core.UyooLogger;
 
@@ -121,10 +120,6 @@ public class LogFile implements Runnable {
 		} finally {
 			UyooLogger.getLogger().debug("File Watcher finished");
 		}
-	}
-	
-	public int getGroupCount() {
-		return 2;
 	}
 	
 	public int getLineCount() {
