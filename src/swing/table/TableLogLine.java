@@ -1,13 +1,19 @@
-package data;
+package swing.table;
 
 import java.util.Vector;
 
-public class PatternLogLine extends LogLine {
+import data.LogLine;
+
+public class TableLogLine extends LogLine {
 
 	private Vector<String> m_groupedData;
 	
-	public PatternLogLine(LogLine ll) {
+	public TableLogLine(LogLine ll) {
 		super(ll.getText(), ll.getLineNumber());
+	}
+	
+	public void setGroupDate(Vector<String> data) {
+		m_groupedData = data;
 	}
 	
 	public Vector<String> getGroupedData() {
