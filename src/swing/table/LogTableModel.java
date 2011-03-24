@@ -54,6 +54,10 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 		logFile.addListener(this);
 	}
 	
+	public Vector<TableLogLine> getVisibleRows() {
+		return m_visibleRows;
+	}
+	
 	private void updateData() {	
 		if (m_logFile == null) {
 			return;
@@ -98,11 +102,15 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 			if (m_filter == null) {
 				contains = true;
 			} else {
-				String contenCell = groupedData.get( m_filter.getColumn());
+				String contenCell = groupedData.get( m_filter.getColumn() );
 				if (m_isSearchCaseSensitive) {
 					contains = contenCell.contains( m_filter.getText() );
 				} else {
 					contains = contenCell.toLowerCase().contains( m_filter.getText().toLowerCase() );
+				}
+				
+				if (contains == true) {
+					nextLogLine.setGroupIsFilterHit( m_filter.getColumn() );
 				}
 			}
 			
