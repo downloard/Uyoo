@@ -15,9 +15,6 @@ public class LogFile implements Runnable {
 	
 	private Vector<ILogFileListener> m_listeners;
 	
-	String 					m_usedPattern;
-	private String          m_configuredPattern;	
-	
 	private Vector<LogLine> m_lines;
 	int                     m_readedLines;
 	
@@ -45,9 +42,7 @@ public class LogFile implements Runnable {
 			UyooLogger.getLogger().info("Open new file \"" + file.getName() + "\"");
 
 			m_file = file;
-						
-			//m_fileLastModified = m_file.lastModified();
-			m_usedPattern = null;
+					
 			m_lines.clear();
 			
 			//stop old thread if necessary
