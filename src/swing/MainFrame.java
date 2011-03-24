@@ -55,6 +55,7 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 	
 //	private JCheckBox  m_cbAutoReload;
 	private JCheckBox  m_cbSearchCaseSensitive;
+	private JCheckBox  m_cbKeepFilteredLines;
 
 	private JLabel m_lblFile;
 	private JLabel m_lblPattern;
@@ -137,6 +138,7 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 			pnlFilter.add(m_cbFilter);
 			pnlFilter.add(m_btnAddFilter);
 			pnlFilter.add(m_cbSearchCaseSensitive);
+			pnlFilter.add(m_cbKeepFilteredLines);
 			
 			pnlNorth.add(pnlFile);
 			pnlNorth.add(pnlButtons);			
@@ -190,6 +192,10 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 		m_cbSearchCaseSensitive = new JCheckBox("Case sensitive");
 		m_cbSearchCaseSensitive.setSelected(m_logTableModel.isSearchCaseSensitive());
 		m_cbSearchCaseSensitive.addActionListener(this);
+		
+		m_cbKeepFilteredLines = new JCheckBox("Keep filtered lines");
+		m_cbKeepFilteredLines.setSelected(m_logTableModel.isKeepFilteredLines());
+		m_cbKeepFilteredLines.addActionListener(this);
 		
 		m_cbPattern = new JComboBox(new SetupComboBoxModelPattern(settings.getPattern().getP()));
 		m_cbPattern.setEditor(new SetupComboBoxEditor());
@@ -260,6 +266,10 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 		// Case sensitive
 		} else if (e.getSource() == m_cbSearchCaseSensitive) {
 			m_logTableModel.setSearchCaseSensitive(m_cbSearchCaseSensitive.isSelected());
+		
+		// keep filtered lines
+		} else if (e.getSource() == m_cbKeepFilteredLines) {
+			m_logTableModel.setKeepFilteredLines(m_cbKeepFilteredLines.isSelected());	
 			
 		// File
 		} else if (e.getSource() == m_cbFile) {

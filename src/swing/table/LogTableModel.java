@@ -24,6 +24,7 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 	private Pattern			 m_pattern;
 	private int 			 m_currentGroupCount;
 	
+	private boolean          m_keepFilteredLines;
 	private boolean          m_isSearchCaseSensitive;
 	private LogFileFilter    m_filter;
 	
@@ -37,6 +38,9 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 		m_readedLines = 0;
 		m_currentGroupCount = DEFAULT_GROUP_COUNT;
 		m_pattern = null;
+		
+		m_isSearchCaseSensitive = false;
+		m_keepFilteredLines     = false;
 	}
 	
 	public LogTableModel(LogFile logFile) {
@@ -101,6 +105,9 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 			//check filter
 			if (m_filter == null) {
 				contains = true;
+			} else if (m_filter.getColumn() >= m_currentGroupCount) {
+				// filter column to high
+				contains = true;
 			} else {
 				String contenCell = groupedData.get( m_filter.getColumn() );
 				if (m_isSearchCaseSensitive) {
@@ -114,7 +121,7 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 				}
 			}
 			
-			if (contains == true) {
+			if (contains == true || m_keepFilteredLines) {
 				nextLogLine.setGroupDate(groupedData);
 				m_visibleRows.add(nextLogLine);
 			}
@@ -169,6 +176,7 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 	/////////////////////////////////////////////////////////////////////////////////////
 	
 	public void structureChanged() {
+		UyooLogger.getLogger().debug("Structure changed");
 		clearData();
 		updateData();
 		fireTableStructureChanged();
@@ -208,6 +216,19 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 		}
 	}
 	
+	public boolean isKeepFilteredLines() {
+		return m_keepFilteredLines;
+	}
+
+	public void setKeepFilteredLines(boolean keep) {
+		UyooLogger.getLogger().debug("Keep filtered lines: " + keep);
+		if (m_keepFilteredLines != keep) {
+			m_keepFilteredLines = keep;
+			
+			dataChanged();
+		}
+	}
+	
 	public void setSelectedPattern(String pattern) {
 		if ((pattern == null) || (pattern.equals(m_configuredPattern) == false)) {
 			UyooLogger.getLogger().debug("Set pattern to " + pattern);
@@ -235,7 +256,7 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 			
 			//test max. first 10 lines
 			//TODO: make it configurable
-			int maxLinesToTest = 5;
+			int maxLinesToTest = 10;
 			if (maxLinesToTest > m_logFile.getLineCount()) {
 				maxLinesToTest = m_logFile.getLineCount();
 			}
