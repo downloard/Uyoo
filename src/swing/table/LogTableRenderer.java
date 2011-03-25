@@ -15,7 +15,7 @@ public class LogTableRenderer  extends DefaultTableCellRenderer {
 	public LogTableRenderer(LogTableModel model) {
 		m_tableModel = model;
 		m_bgColorHighlighted = new Color(255,255,165);
-		m_bgColorDefault     = new Color(255,255,255);
+		m_bgColorDefault     = getBackground();
 	}
 	
 	@Override
@@ -23,11 +23,13 @@ public class LogTableRenderer  extends DefaultTableCellRenderer {
 			boolean isSelected, boolean hasFocus, int row, int column) {
 		Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		
-		TableLogLine line = m_tableModel.getVisibleRows().get(row);
-		if (line.isGroupFilterHit(column)) {
-			c.setBackground(m_bgColorHighlighted);
-		} else {
-			c.setBackground(m_bgColorDefault);
+		if (isSelected == false) {
+			TableLogLine line = m_tableModel.getVisibleRows().get(row);
+			if (line.isGroupFilterHit(column)) {
+				c.setBackground(m_bgColorHighlighted);
+			} else {
+				c.setBackground(m_bgColorDefault);
+			}
 		}
 		
 		return c;
