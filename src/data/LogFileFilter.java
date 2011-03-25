@@ -1,13 +1,26 @@
 package data;
 
+
 public class LogFileFilter {
+	
+	public static final int ALL_COLUMNS = -1;
+	
 	int m_column;
 	String m_text;
 	
 	public LogFileFilter(String text) throws IllegalArgumentException {
-		String[] arr = text.split(":");
-		m_column = Integer.parseInt(arr[0]);
-		m_text = arr[1];
+		if (text.startsWith("\"")) {
+			if (text.endsWith("\"")) {
+				m_text = text.substring(1, text.length()-1);
+				m_column = ALL_COLUMNS;
+			} else {
+				throw new IllegalArgumentException();
+			}
+		} else {
+			String[] arr = text.split(":");
+			m_column = Integer.parseInt(arr[0]);
+			m_text = arr[1];
+		}
 	}
 
 	public int getColumn() {

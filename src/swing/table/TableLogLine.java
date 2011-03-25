@@ -19,10 +19,6 @@ public class TableLogLine extends LogLine {
 		m_groupedData = data;
 	}
 	
-	public Vector<String> getGroupedData() {
-		return m_groupedData;
-	}
-	
 	public String getGroupText(int groupIndex) {
 		if (groupIndex > m_groupedData.size()) {
 			return "";
@@ -37,5 +33,9 @@ public class TableLogLine extends LogLine {
 
 	public boolean isGroupFilterHit(int index) {
 		return m_filterHits.contains(index);
+	}
+
+	public int getGroupCount() {
+		return m_groupedData.size();
 	}
 }

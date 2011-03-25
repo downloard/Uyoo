@@ -75,6 +75,7 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 			
 			// create group data by pattern
 			Vector<String> groupedData = new Vector<String>(m_currentGroupCount);			
+			nextLogLine.setGroupDate(groupedData);
 			
 			//first column is line number
 			groupedData.add("" + (m_readedLines+1));
@@ -109,25 +110,52 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 				// filter column to high
 				contains = true;
 			} else {
-				String contenCell = groupedData.get( m_filter.getColumn() );
-				if (m_isSearchCaseSensitive) {
-					contains = contenCell.contains( m_filter.getText() );
-				} else {
-					contains = contenCell.toLowerCase().contains( m_filter.getText().toLowerCase() );
-				}
-				
-				if (contains == true) {
-					nextLogLine.setGroupIsFilterHit( m_filter.getColumn() );
-				}
+				contains = matchesFilter(nextLogLine, m_filter);
 			}
 			
+			// finaly check if line should be visible
 			if (contains == true || m_keepFilteredLines) {
-				nextLogLine.setGroupDate(groupedData);
 				m_visibleRows.add(nextLogLine);
 			}
 		}
 	}
 	
+	private boolean matchesFilter(TableLogLine line, LogFileFilter filter) {
+		boolean result = false;
+		
+		if (m_filter.getColumn() == LogFileFilter.ALL_COLUMNS) {
+			for (int iNextGroup=0; iNextGroup < line.getGroupCount(); iNextGroup++) {
+				boolean matchResult = matchesTextInGroup(line, filter.getText(), iNextGroup);
+				if (matchResult == true) {
+					result = true;
+					line.setGroupIsFilterHit( iNextGroup );
+				}
+			}
+		} else {
+			result = matchesTextInGroup(line, filter.getText(), filter.getColumn());			
+			if (result == true) {
+				line.setGroupIsFilterHit( filter.getColumn() );
+			}
+		}
+		
+		return result;
+	}
+	
+	private boolean  matchesTextInGroup(TableLogLine line, String text, int indexToCheck) {
+		boolean result;
+		String contenCell = line.getGroupText( indexToCheck);
+		if (m_isSearchCaseSensitive) {
+			result = contenCell.contains( text );
+		} else {
+			result = contenCell.toLowerCase().contains( text.toLowerCase() );
+		}
+		
+		if (result == true) {
+			line.setGroupIsFilterHit( indexToCheck );
+		}
+		return result;
+	}
+
 	private void clearData() {
 		m_visibleRows.clear();
 		m_readedLines = 0;
