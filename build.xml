@@ -58,7 +58,3 @@
 		       basedir="${dirDeploy}" />
 	</target>
 </project>
-
-<!-- asdf >
-
-lll
