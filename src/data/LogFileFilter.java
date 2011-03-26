@@ -84,7 +84,7 @@ public class LogFileFilter {
 			return false;
 		}
 		
-		if (other.m_text.equals(this.m_column) == false) {
+		if (other.m_text.equals(this.m_text) == false) {
 			return false;
 		}
 
