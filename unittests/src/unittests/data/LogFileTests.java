@@ -18,7 +18,7 @@ public class LogFileTests {
 	
 
 	@Test
-	public void loadFile() {
+	public void loadFile() throws Throwable {
 		LogFile lf = new LogFile();
 		
 		//mock for callbacks
@@ -37,12 +37,10 @@ public class LogFileTests {
 		assertTrue( callback.wasFileChangedCalled() );
 		
 		//check line count
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			assertTrue(false);
-		}
+		Thread.sleep(1000);
 		assertEquals(6, lf.getLineCount());
+		
+		lf.finalize();
 	}
 	
 	@Test
