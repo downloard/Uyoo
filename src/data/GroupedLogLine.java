@@ -16,7 +16,7 @@ public class GroupedLogLine extends LogLine {
 	}
 	
 	public String getGroupText(int groupIndex) {
-		if (groupIndex > m_groupedData.size()) {
+		if (groupIndex < 0  || groupIndex >= m_groupedData.size()) {
 			return "";
 		} else {
 			return m_groupedData.get(groupIndex);
@@ -55,8 +55,8 @@ public class GroupedLogLine extends LogLine {
 			} else {
 				//row does not matches pattern, add whole line
 				m_groupedData.add(getText());
-				//other columns are empty
-				for (int i=1; i < groupCountPatternShouldContain; i++) {
+				//other columns are empty 
+				while (m_groupedData.size() < groupCountPatternShouldContain) {
 					m_groupedData.add("");
 				}
 			}
