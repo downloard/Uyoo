@@ -6,6 +6,8 @@ import java.awt.Component;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import data.GroupedLogLine;
+
 public class LogTableRenderer  extends DefaultTableCellRenderer {
 
 	private LogTableModel m_tableModel;
@@ -24,7 +26,7 @@ public class LogTableRenderer  extends DefaultTableCellRenderer {
 		Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		
 		if (isSelected == false) {
-			TableLogLine line = m_tableModel.getVisibleRows().get(row);
+			GroupedLogLine line = m_tableModel.getVisibleRows().get(row);
 			if (line.isGroupFilterHit(column)) {
 				c.setBackground(m_bgColorHighlighted);
 			} else {

@@ -1,16 +1,14 @@
-package swing.table;
+package data;
 
 import java.util.HashSet;
 import java.util.Vector;
 
-import data.LogLine;
-
-public class TableLogLine extends LogLine {
-
+public class GroupedLogLine extends LogLine {
+	
 	private Vector<String>   m_groupedData;
 	private HashSet<Integer> m_filterHits;
 	
-	public TableLogLine(LogLine ll) {
+	public GroupedLogLine(LogLine ll) {
 		super(ll.getText(), ll.getLineNumber());
 		m_filterHits = new HashSet<Integer>();
 	}

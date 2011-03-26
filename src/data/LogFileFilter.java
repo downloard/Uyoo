@@ -5,8 +5,8 @@ public class LogFileFilter {
 	
 	public static final int ALL_COLUMNS = -1;
 	
-	int m_column;
-	String m_text;
+	private int     m_column;
+	private String  m_text;
 	
 	public LogFileFilter(String text) throws IllegalArgumentException {
 		if (text.startsWith("\"")) {
@@ -30,6 +30,43 @@ public class LogFileFilter {
 	public String getText() {
 		return m_text;
 	}	
+	
+	public boolean matchesFilter(GroupedLogLine line, boolean caseSensitive) {
+		boolean result = false;
+		
+		if (this.getColumn() == LogFileFilter.ALL_COLUMNS) {
+			for (int iNextGroup=0; iNextGroup < line.getGroupCount(); iNextGroup++) {
+				boolean matchResult = matchesTextInGroup(line, getText(), iNextGroup, caseSensitive);
+				if (matchResult == true) {
+					result = true;
+					line.setGroupIsFilterHit( iNextGroup );
+				}
+			}
+		} else {
+			result = matchesTextInGroup(line, getText(), getColumn(), caseSensitive);			
+			if (result == true) {
+				line.setGroupIsFilterHit( getColumn() );
+			}
+		}
+		
+		return result;
+	}
+	
+	private boolean  matchesTextInGroup(GroupedLogLine line, String text, int indexToCheck, boolean caseSensitive) {
+		boolean result;
+		String contenCell = line.getGroupText( indexToCheck);
+		if (caseSensitive) {
+			result = contenCell.contains( text );
+		} else {
+			result = contenCell.toLowerCase().contains( text.toLowerCase() );
+		}
+		
+		if (result == true) {
+			line.setGroupIsFilterHit( indexToCheck );
+		}
+		return result;
+	}
+
 	
 	@Override
 	public String toString() {

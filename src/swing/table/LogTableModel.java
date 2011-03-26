@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import javax.swing.table.AbstractTableModel;
 
 import core.UyooLogger;
+import data.GroupedLogLine;
 import data.ILogFileListener;
 import data.LogFile;
 import data.LogFileFilter;
@@ -28,13 +29,13 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 	private boolean          m_isSearchCaseSensitive;
 	private LogFileFilter    m_filter;
 	
-	private Vector<TableLogLine> m_visibleRows;
+	private Vector<GroupedLogLine> m_visibleRows;
 	private int     	         m_readedLines;
 	
 	
 	
 	public LogTableModel() {
-		m_visibleRows = new Vector<TableLogLine>();
+		m_visibleRows = new Vector<GroupedLogLine>();
 		m_readedLines = 0;
 		m_currentGroupCount = DEFAULT_GROUP_COUNT;
 		m_pattern = null;
@@ -58,7 +59,7 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 		logFile.addListener(this);
 	}
 	
-	public Vector<TableLogLine> getVisibleRows() {
+	public Vector<GroupedLogLine> getVisibleRows() {
 		return m_visibleRows;
 	}
 	
@@ -70,7 +71,7 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 		//iterate over all lines
 		int lines = m_logFile.getLineCount();
 		for (; m_readedLines < lines; m_readedLines++) {
-			TableLogLine nextLogLine = new TableLogLine( m_logFile.getData(m_readedLines) );
+			GroupedLogLine nextLogLine = new GroupedLogLine( m_logFile.getData(m_readedLines) );
 			boolean contains = false;
 			
 			// create group data by pattern
@@ -110,7 +111,7 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 				// filter column to high
 				contains = true;
 			} else {
-				contains = matchesFilter(nextLogLine, m_filter);
+				contains = m_filter.matchesFilter(nextLogLine, m_isSearchCaseSensitive);
 			}
 			
 			// finaly check if line should be visible
@@ -120,42 +121,6 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 		}
 	}
 	
-	private boolean matchesFilter(TableLogLine line, LogFileFilter filter) {
-		boolean result = false;
-		
-		if (m_filter.getColumn() == LogFileFilter.ALL_COLUMNS) {
-			for (int iNextGroup=0; iNextGroup < line.getGroupCount(); iNextGroup++) {
-				boolean matchResult = matchesTextInGroup(line, filter.getText(), iNextGroup);
-				if (matchResult == true) {
-					result = true;
-					line.setGroupIsFilterHit( iNextGroup );
-				}
-			}
-		} else {
-			result = matchesTextInGroup(line, filter.getText(), filter.getColumn());			
-			if (result == true) {
-				line.setGroupIsFilterHit( filter.getColumn() );
-			}
-		}
-		
-		return result;
-	}
-	
-	private boolean  matchesTextInGroup(TableLogLine line, String text, int indexToCheck) {
-		boolean result;
-		String contenCell = line.getGroupText( indexToCheck);
-		if (m_isSearchCaseSensitive) {
-			result = contenCell.contains( text );
-		} else {
-			result = contenCell.toLowerCase().contains( text.toLowerCase() );
-		}
-		
-		if (result == true) {
-			line.setGroupIsFilterHit( indexToCheck );
-		}
-		return result;
-	}
-
 	private void clearData() {
 		m_visibleRows.clear();
 		m_readedLines = 0;
@@ -183,17 +148,8 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		TableLogLine line = m_visibleRows.get(rowIndex);
+		GroupedLogLine line = m_visibleRows.get(rowIndex);
 		return line.getGroupText(columnIndex);
-//		switch (columnIndex)
-//		{
-//			case 0:
-//				return "" + line.getLineNumber();
-//			case 1:
-//				return line.getText();
-//			default:
-//				return "<Error>";
-//		}
 	}
 	
 	@Override
