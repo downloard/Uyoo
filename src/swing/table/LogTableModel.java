@@ -71,40 +71,12 @@ public class LogTableModel extends AbstractTableModel implements ILogFileListene
 		//iterate over all lines
 		int lines = m_logFile.getLineCount();
 		for (; m_readedLines < lines; m_readedLines++) {
+			
 			GroupedLogLine nextLogLine = new GroupedLogLine( m_logFile.getData(m_readedLines) );
-			boolean contains = false;
-			
-			// create group data by pattern
-			Vector<String> groupedData = new Vector<String>(m_currentGroupCount);			
-			nextLogLine.setGroupDate(groupedData);
-			
-			//first column is line number
-			groupedData.add("" + (m_readedLines+1));
-			
-			// pattern defined
-			if (m_pattern != null) {
-				Matcher matcher = m_pattern.matcher(nextLogLine.getText());
-				if (matcher.matches()) {
-					//row matches pattern, each group is a column
-					for (int i=1; i <= matcher.groupCount(); i++) {
-						groupedData.add(matcher.group(i));
-					}
-				} else {
-					//row does not matches pattern, add whole line
-					groupedData.add(nextLogLine.getText());
-					//other columns are empty
-					for (int i=1; i < m_currentGroupCount; i++) {
-						groupedData.add("");
-					}
-				}
-				
-			// no pattern
-			} else {
-				// whole line into 2. column
-				groupedData.add(nextLogLine.getText());
-			}
+			nextLogLine.groupData(m_pattern, m_currentGroupCount);
 			
 			//check filter
+			boolean contains = false;
 			if (m_filter == null) {
 				contains = true;
 			} else if (m_filter.getColumn() >= m_currentGroupCount) {
