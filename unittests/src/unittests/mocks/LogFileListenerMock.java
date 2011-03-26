@@ -8,6 +8,7 @@ public class LogFileListenerMock implements ILogFileListener {
 
 	private boolean m_dataChangedCalled;
 	private boolean m_structureChangedCalled;
+	private boolean m_wasFileChangedCalled;
 	
 	public LogFileListenerMock() {
 		reset();
@@ -20,7 +21,7 @@ public class LogFileListenerMock implements ILogFileListener {
 	
 	@Override
 	public void fileChanged(File newFile) {
-		// TODO Auto-generated method stub		
+		m_wasFileChangedCalled = true;
 	}
 
 	public boolean wasStructureChangedCalled() {
@@ -34,5 +35,10 @@ public class LogFileListenerMock implements ILogFileListener {
 	public void reset() {
 		m_dataChangedCalled = false;
 		m_structureChangedCalled = false;
+		m_wasFileChangedCalled = false;
+	}
+
+	public boolean wasFileChangedCalled() {
+		return m_wasFileChangedCalled;
 	}
 }
