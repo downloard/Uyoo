@@ -12,6 +12,7 @@ import unittests.data.GroupedLogLineTests;
 import unittests.data.LogFileListenerTest;
 import unittests.data.LogFileTests;
 import unittests.data.LogFilterFileTest;
+import unittests.setup.UyooSettingsTests;
 
 @RunWith(Suite.class)
 @SuiteClasses({
@@ -19,7 +20,8 @@ import unittests.data.LogFilterFileTest;
 			   GroupedLogLineTests.class,
 	           LogFileTests.class,
 	           LogFilterFileTest.class,
-	           FileWatcherTest.class
+	           FileWatcherTest.class,
+	           UyooSettingsTests.class
 	          })
 public class UyooTestSuite {
 

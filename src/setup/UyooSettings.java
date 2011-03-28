@@ -34,8 +34,12 @@ public class UyooSettings {
 		return m_instance;
 	}
 	
-	private UyooSettings() {
+	protected UyooSettings() {
 		loadConfigFile();
+	}
+	
+	public String getFileName() {
+		return SETTINGS_FILE;
 	}
 	
 	public String getApplicationName() {
@@ -60,31 +64,44 @@ public class UyooSettings {
 			JAXBContext ctx = JAXBContext.newInstance(Settings.class);
 			javax.xml.bind.Marshaller m = ctx.createMarshaller();
 			m.setProperty(javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			m.marshal(m_settings, new File(SETTINGS_FILE));
+			m.marshal(m_settings, new File(getFileName()));
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
 	
 	private void loadConfigFile() {
-		File file = new File(SETTINGS_FILE);
+		File file = new File(getFileName());
 		if(!file.exists())
 		{
-			return;
+			createDefaultData();
+		} else {
+			try
+			{
+				JAXBContext context = JAXBContext.newInstance(Settings.class);
+				javax.xml.bind.Unmarshaller um = context.createUnmarshaller();
+				
+				JAXBElement<Settings> configElement = um.unmarshal(new StreamSource(file), Settings.class);
+				m_settings = configElement.getValue();
+			}
+			catch(JAXBException ex)
+			{
+				ex.printStackTrace();
+			}
 		}
+	}
 
-		try
-		{
-			JAXBContext context = JAXBContext.newInstance(Settings.class);
-			javax.xml.bind.Unmarshaller um = context.createUnmarshaller();
-			
-			JAXBElement<Settings> configElement = um.unmarshal(new StreamSource(file), Settings.class);
-			m_settings = configElement.getValue();
-		}
-		catch(JAXBException ex)
-		{
-			ex.printStackTrace();
-		}		
+	private void createDefaultData() {
+		m_settings = new Settings();
+		
+		//add files
+		m_settings.setFiles(new Settings.Files());
+		
+		//add filters
+		m_settings.setFilter(new Settings.Filter());
+		
+		//add pattern
+		m_settings.setPattern(new Settings.Pattern());
 	}
 
 	public void saveFilter(LogFileFilter filter) {
@@ -133,7 +150,7 @@ public class UyooSettings {
 			pattern.add(p);
 
 			//save persistent
-			UyooSettings.getInstance().saveConfigFile();
+			saveConfigFile();
 		}		
 	}
 
@@ -157,7 +174,7 @@ public class UyooSettings {
 			files.add(f);
 
 			//save persistent
-			UyooSettings.getInstance().saveConfigFile();
+			saveConfigFile();
 		}		
 	}
 }

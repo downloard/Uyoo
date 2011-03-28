@@ -1,6 +1,7 @@
 package swing;
 
 import generated.Settings;
+import generated.Settings.Files.F;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -11,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -172,7 +174,8 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 	private void initComponents() {
 		Settings settings = UyooSettings.getInstance().getPersistentSettings();
 		
-		m_cbFile = new JComboBox(new SetupComboBoxModelFile(settings.getFiles().getF()));
+		List<F> files = settings.getFiles().getF();
+		m_cbFile = new JComboBox(new SetupComboBoxModelFile(files));
 		m_cbFile.setPreferredSize(new Dimension(600, m_cbFile.getPreferredSize().height));
 		m_cbFile.setEditable(false);
 		m_cbFile.addActionListener(this);
@@ -237,9 +240,29 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 		((SetupComboBoxModel) (m_cbPattern.getModel())).dataChanged();
 	}
 	
-	private File getSelectedFile() {
+	private void selectedFile() {
 		assert(m_cbFile.getItemCount() > 0);
-		return new File(m_cbFile.getSelectedItem().toString());
+		
+		boolean error = false;
+		
+		Object selectedFile = m_cbFile.getSelectedItem();
+		if (selectedFile != null) {
+			File f = new File(selectedFile.toString());
+			
+			if (f.exists()) {
+				m_logFile.openFile( f );
+			} else {
+				//TODO: clear table
+				error = true;
+			}
+		} 
+		
+		if (error) {
+			JOptionPane.showMessageDialog(this, 
+					                      "No file selected",
+					                      "Error",
+					                      JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
 	@Override
@@ -251,18 +274,14 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 		// Open
 		if (e.getSource() == m_btnOpen) {
 			File selectedFile = selectFile();
-			if (selectedFile != null) {				
+			if (selectedFile != null) {								
+				m_logFile.openFile(selectedFile);
+				
 				//saveSelectedFile
 				UyooSettings.getInstance().saveFile(m_logFile.getFile());
 				updateSettings();
-				
-				m_logFile.openFile(selectedFile);
 			}
-			
-		// (Re-)Load
-		} else if (e.getSource() == m_btnReload) {
-			m_logFile.openFile( getSelectedFile() );
-	
+
 		// Case sensitive
 		} else if (e.getSource() == m_cbSearchCaseSensitive) {
 			m_logTableModel.setSearchCaseSensitive(m_cbSearchCaseSensitive.isSelected());
@@ -272,8 +291,9 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 			m_logTableModel.setKeepFilteredLines(m_cbKeepFilteredLines.isSelected());	
 			
 		// File
-		} else if (e.getSource() == m_cbFile) {
-			m_logFile.openFile( getSelectedFile() );
+		} else if ((e.getSource() == m_cbFile) || (e.getSource() == m_btnReload)) {
+			selectedFile();
+			
 			
 		// Pattern
 		//TODO: is it dirty to check "comboBoxChangeEvent" via string? 
