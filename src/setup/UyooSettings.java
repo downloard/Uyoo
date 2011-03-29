@@ -11,6 +11,7 @@ import javax.xml.transform.stream.StreamSource;
 import core.UyooLogger;
 import data.LogFileFilter;
 
+import generated.ObjectFactory;
 import generated.Settings;
 import generated.Settings.Files.F;
 import generated.Settings.Pattern.P;
@@ -92,16 +93,18 @@ public class UyooSettings {
 	}
 
 	private void createDefaultData() {
-		m_settings = new Settings();
+		ObjectFactory factory = new ObjectFactory();
+		
+		m_settings = factory.createSettings();
 		
 		//add files
-		m_settings.setFiles(new Settings.Files());
+		m_settings.setFiles( factory.createSettingsFiles() );
 		
 		//add filters
-		m_settings.setFilter(new Settings.Filter());
+		m_settings.setFilter( factory.createSettingsFilter() );
 		
 		//add pattern
-		m_settings.setPattern(new Settings.Pattern());
+		m_settings.setPattern( factory.createSettingsPattern() );
 	}
 
 	public void saveFilter(LogFileFilter filter) {
@@ -120,7 +123,7 @@ public class UyooSettings {
 			UyooLogger.getLogger().info("Save filter " + filter);
 			
 			//add to settings
-			generated.Settings.Filter.F f = new generated.Settings.Filter.F();
+			generated.Settings.Filter.F f = new ObjectFactory().createSettingsFilterF();
 			f.setValue(filter.toString());
 			lstFilter.add(f);
 
@@ -145,7 +148,7 @@ public class UyooSettings {
 			UyooLogger.getLogger().info("Save pattern " + selectedPattern);
 			
 			//add to settings
-			P p = new P();
+			P p = new ObjectFactory().createSettingsPatternP();
 			p.setValue(selectedPattern);
 			pattern.add(p);
 
@@ -169,7 +172,7 @@ public class UyooSettings {
 		
 		if (needToAdd == true) {
 			//add to settings
-			F f = new F();
+			F f = new ObjectFactory().createSettingsFilesF();
 			f.setValue(file.getAbsolutePath());
 			files.add(f);
 
