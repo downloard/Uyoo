@@ -34,6 +34,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import core.ExceptionHandler;
+import core.UyooLogger;
+
 import setup.UyooSettings;
 import swing.SetupComboBox.SetupComboBoxEditor;
 import swing.SetupComboBox.SetupComboBoxModel;
@@ -434,7 +437,12 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 	public void dragOver(DropTargetDragEvent dtde) {
 		Transferable tr = dtde.getTransferable();
 		if (tr != null && tr.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-			dtde.acceptDrag(DnDConstants.ACTION_COPY);
+			File f = getDropFile(tr);
+			if (f != null) {
+				dtde.acceptDrag(DnDConstants.ACTION_COPY);
+			} else {
+				dtde.acceptDrag(DnDConstants.ACTION_NONE);
+			}
 		} else {
 			dtde.acceptDrag(DnDConstants.ACTION_NONE);
 		}
@@ -449,31 +457,49 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 			
 			dtde.acceptDrop(DnDConstants.ACTION_COPY);
 			
-			try {
-				//Java doc "DataFlavor.javaFileListFlavor":
-				// Each element of the list is required/guaranteed to be of type java.io.File
-				@SuppressWarnings("unchecked")
-				List<File> data = (List<File>) (tr.getTransferData(DataFlavor.javaFileListFlavor));
-				
-				if (data.size() > 0) {
-					//use first entry
-					File f = data.get(0);
-					openFile(f);
-				}
-				
-			} catch (UnsupportedFlavorException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			File f = getDropFile(tr);
+			
+			if (f != null) {
+				openFile(f);
+			} else {
+				dtde.rejectDrop();
 			}
+				
 		} else {
 			dtde.rejectDrop();
 		}
 	}
-	
+
 	@Override
 	public void dropActionChanged(DropTargetDragEvent dtde) {
+	}
+
+	private File getDropFile(Transferable tr) {
+		File f = null;
+		try {
+			//Java doc "DataFlavor.javaFileListFlavor":
+			// Each element of the list is required/guaranteed to be of type java.io.File
+			@SuppressWarnings("unchecked")
+			List<File> data = (List<File>) (tr.getTransferData(DataFlavor.javaFileListFlavor));
+			
+			//only accept one file
+			if (data.size() == 1) {
+				//use first entry
+				f = data.get(0);
+				
+				if (f.isDirectory()) {
+					f = null;
+				}
+				
+			}
+		} catch (UnsupportedFlavorException e) {
+			UyooLogger.getLogger().error("UnsupportedFlavorException", e);
+		} catch (IOException e) {
+			UyooLogger.getLogger().error("IOException", e);
+		} catch (ClassCastException e) {
+			UyooLogger.getLogger().error("ClassCastException", e);
+		} 
+			
+		return f;
 	}
 }
