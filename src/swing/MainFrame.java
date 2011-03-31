@@ -7,9 +7,19 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -39,7 +49,7 @@ import data.LogFileFilter;
 
 
 @SuppressWarnings("serial")
-public class MainFrame extends StatusBarFrame implements ActionListener, ILogFileListener {
+public class MainFrame extends StatusBarFrame implements ActionListener, ILogFileListener, DropTargetListener {
 	
 	private LogFile    m_logFile;
 	
@@ -179,6 +189,7 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 		m_cbFile.setPreferredSize(new Dimension(600, m_cbFile.getPreferredSize().height));
 		m_cbFile.setEditable(false);
 		m_cbFile.addActionListener(this);
+		new DropTarget(m_cbFile, this);
 		
 		m_btnOpen = new JButton("...");
 		m_btnOpen.addActionListener(this);
@@ -240,28 +251,45 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 		((SetupComboBoxModel) (m_cbPattern.getModel())).dataChanged();
 	}
 	
-	private void selectedFile() {
+	private File selectFile() {	
+		JFileChooser fc = new JFileChooser();
+		if (m_logFile.getFile() != null) {
+			fc.setSelectedFile(m_logFile.getFile().getAbsoluteFile());
+		}
+		int state = fc.showOpenDialog(this);
+		if ( state == JFileChooser.APPROVE_OPTION ) {
+			return fc.getSelectedFile();
+	    } else {
+	    	return null;
+	    }
+	}
+	
+	private void openSelectedFile() {
 		assert(m_cbFile.getItemCount() > 0);
-		
-		boolean error = false;
-		
+
+		File f = null;
 		Object selectedFile = m_cbFile.getSelectedItem();
 		if (selectedFile != null) {
-			File f = new File(selectedFile.toString());
-			
-			if (f.exists()) {
-				m_logFile.openFile( f );
-			} else {
-				//TODO: clear table
-				error = true;
-			}
+			f = new File(selectedFile.toString());
 		} 
-		
-		if (error) {
+		// if f is null openFile creates error message
+		openFile(f);
+	}
+	
+	private void openFile(File file) {
+		if (file != null && file.exists()) {			
+			m_logFile.openFile( file );
+			
+			//saveSelectedFile
+			UyooSettings.getInstance().saveFile(m_logFile.getFile());
+			updateSettings();			
+		} else {
 			JOptionPane.showMessageDialog(this, 
-					                      "No file selected",
-					                      "Error",
-					                      JOptionPane.ERROR_MESSAGE);
+                    "No valid file selected",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+			
+			//TODO: clear table
 		}
 	}
 
@@ -275,12 +303,12 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 		if (e.getSource() == m_btnOpen) {
 			File selectedFile = selectFile();
 			if (selectedFile != null) {								
-				m_logFile.openFile(selectedFile);
-				
-				//saveSelectedFile
-				UyooSettings.getInstance().saveFile(m_logFile.getFile());
-				updateSettings();
+				openFile(selectedFile);
 			}
+			
+		// File
+		} else if ((e.getSource() == m_cbFile) || (e.getSource() == m_btnReload)) {
+			openSelectedFile();
 
 		// Case sensitive
 		} else if (e.getSource() == m_cbSearchCaseSensitive) {
@@ -288,12 +316,7 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 		
 		// keep filtered lines
 		} else if (e.getSource() == m_cbKeepFilteredLines) {
-			m_logTableModel.setKeepFilteredLines(m_cbKeepFilteredLines.isSelected());	
-			
-		// File
-		} else if ((e.getSource() == m_cbFile) || (e.getSource() == m_btnReload)) {
-			selectedFile();
-			
+			m_logTableModel.setKeepFilteredLines(m_cbKeepFilteredLines.isSelected());				
 			
 		// Pattern
 		//TODO: is it dirty to check "comboBoxChangeEvent" via string? 
@@ -342,19 +365,6 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 
 	private void setSelectedPattern() {
 		m_logTableModel.setSelectedPattern( m_cbPattern.getEditor().getItem().toString() );
-	}
-	
-	public File selectFile() {	
-		JFileChooser fc = new JFileChooser();
-		if (m_logFile.getFile() != null) {
-			fc.setSelectedFile(m_logFile.getFile().getAbsoluteFile());
-		}
-		int state = fc.showOpenDialog(this);
-		if ( state == JFileChooser.APPROVE_OPTION ) {
-			return fc.getSelectedFile();
-	    } else {
-	    	return null;
-	    }
 	}
 	
 	private void updateFileInformation() {
@@ -408,5 +418,62 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 	@Override
 	public void fileChanged(File newFile) {
 		updateFileInformation();
+	}
+	
+	//************** DROP TARGET LISTENER ***********************
+	
+	@Override
+	public void dragEnter(DropTargetDragEvent dtde) {		
+	}
+	
+	@Override
+	public void dragExit(DropTargetEvent dte) {
+	}
+	
+	@Override
+	public void dragOver(DropTargetDragEvent dtde) {
+		Transferable tr = dtde.getTransferable();
+		if (tr != null && tr.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+			dtde.acceptDrag(DnDConstants.ACTION_COPY);
+		} else {
+			dtde.acceptDrag(DnDConstants.ACTION_NONE);
+		}
+		
+	}
+	
+	@Override
+	public void drop(DropTargetDropEvent dtde) {
+		Transferable tr = dtde.getTransferable();
+
+		if (tr.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+			
+			dtde.acceptDrop(DnDConstants.ACTION_COPY);
+			
+			try {
+				//Java doc "DataFlavor.javaFileListFlavor":
+				// Each element of the list is required/guaranteed to be of type java.io.File
+				@SuppressWarnings("unchecked")
+				List<File> data = (List<File>) (tr.getTransferData(DataFlavor.javaFileListFlavor));
+				
+				if (data.size() > 0) {
+					//use first entry
+					File f = data.get(0);
+					openFile(f);
+				}
+				
+			} catch (UnsupportedFlavorException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			dtde.rejectDrop();
+		}
+	}
+	
+	@Override
+	public void dropActionChanged(DropTargetDragEvent dtde) {
 	}
 }
