@@ -34,9 +34,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import core.ExceptionHandler;
-import core.UyooLogger;
-
 import setup.UyooSettings;
 import swing.SetupComboBox.SetupComboBoxEditor;
 import swing.SetupComboBox.SetupComboBoxModel;
@@ -46,6 +43,7 @@ import swing.SetupComboBox.SetupComboBoxModelPattern;
 import swing.components.StatusBarFrame;
 import swing.table.LogTable;
 import swing.table.LogTableModel;
+import core.UyooLogger;
 import data.ILogFileListener;
 import data.LogFile;
 import data.LogFileFilter;

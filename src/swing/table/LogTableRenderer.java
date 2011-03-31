@@ -8,6 +8,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import data.GroupedLogLine;
 
+@SuppressWarnings("serial")
 public class LogTableRenderer  extends DefaultTableCellRenderer {
 
 	private LogTableModel m_tableModel;
