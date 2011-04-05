@@ -208,7 +208,7 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 		m_cbSearchCaseSensitive.setSelected(m_logTableModel.isSearchCaseSensitive());
 		m_cbSearchCaseSensitive.addActionListener(this);
 		
-		m_cbKeepFilteredLines = new JCheckBox("Keep filtered lines");
+		m_cbKeepFilteredLines = new JCheckBox("Show filtered lines");
 		m_cbKeepFilteredLines.setSelected(m_logTableModel.isKeepFilteredLines());
 		m_cbKeepFilteredLines.addActionListener(this);
 		
