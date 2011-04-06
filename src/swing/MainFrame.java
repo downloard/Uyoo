@@ -43,6 +43,7 @@ import swing.SetupComboBox.SetupComboBoxModelPattern;
 import swing.components.StatusBarFrame;
 import swing.table.LogTable;
 import swing.table.LogTableModel;
+import core.FileHelper;
 import core.UyooLogger;
 import data.ILogFileListener;
 import data.LogFile;
@@ -378,28 +379,7 @@ public class MainFrame extends StatusBarFrame implements ActionListener, ILogFil
 
 		//File size informations
 		{
-			long fileSize = file.length();
-			StringBuilder strSize = new StringBuilder("Size: ");
-			
-			if (fileSize > 1000*1000) {
-				//xx.xxMB
-				strSize.append(fileSize/1000/1000);
-				strSize.append(".");
-				//only first 2 digits
-				strSize.append((fileSize/1000/10)%(100)); 
-				strSize.append("MB");
-			} else if (fileSize > 1000) {
-				//xx.xxKB
-				strSize.append(fileSize/1000);
-				strSize.append(".");
-				//only first 2 digits
-				strSize.append((fileSize/10)%(100));
-				strSize.append("KB");
-			} else {
-				//xxBytes
-				strSize.append(fileSize + "Bytes");
-			}
-			setLeftText(strSize.toString());
+			setLeftText("Size: " + FileHelper.getFormattedFileSize(file));
 		}
 		
 		//File time stamp informations

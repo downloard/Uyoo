@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.FileChannel;
+import java.text.NumberFormat;
 
 
 public class FileHelper {
@@ -50,4 +51,45 @@ public class FileHelper {
         in.close();
         out.close();
     }
+	
+	public static String getFormattedFileSize(long fileSize) {
+		// init data (default is Byte)
+		StringBuilder result = new StringBuilder("");
+		String unit = "b";
+		long factor = 1024;
+		long multiplicator = 1;
+		
+		// check if KB or MB is needed
+		if (fileSize >= factor*factor) {
+			multiplicator = factor*factor;
+			unit = "MB";					
+		} else if (fileSize >= factor) {
+			multiplicator = factor;
+			unit = "KB";				
+		}
+		
+		// append digit to result
+		result.append( fileSize/multiplicator );
+		
+		// calculate rest (check for fraction digits)
+		long mod = fileSize%multiplicator;
+		long normalized = (mod*100)/multiplicator;
+		if (normalized != 0) {
+			// append fraction digits
+			NumberFormat fmt = NumberFormat.getNumberInstance();
+			fmt.setMinimumIntegerDigits(2);
+			fmt.setMaximumIntegerDigits(2);
+			result.append(".");
+			result.append(fmt.format(normalized));
+		}
+		
+		// append unit
+		result.append(unit);
+		
+		return result.toString();
+	}
+	
+	public static String getFormattedFileSize(File file) {
+		return getFormattedFileSize( file.length() );
+	}
 }
